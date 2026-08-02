@@ -14,7 +14,9 @@ class WebsiteController extends Controller
      */
     public function index()
     {
-        return "website controller working";
+        $websites = Website::latest()->get();
+
+        return view('admin.websites.index', compact('websites'));
     }
 
     /**
@@ -61,7 +63,9 @@ class WebsiteController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $website = Website::findOrFail($id);
+
+        return view('admin.websites.edit', compact('website'));
     }
 
     /**
@@ -69,7 +73,20 @@ class WebsiteController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $website = Website::findOrFail($id);
+        
+        $website->update([
+
+             'name' => $request->name,
+             'slug' => $request->slug,
+             'language' => $request->language,
+             'theme' => $request->theme,
+             'domain' => $request->domain,
+        ]);
+
+        return redirect()
+          ->route('websites.index')
+          ->with('success' , 'Website Updated Successfully.');
     }
 
     /**
@@ -77,6 +94,12 @@ class WebsiteController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $website = Website::findOrfail($id);
+
+        $website->delete();
+
+        return redirect()
+          ->route('websites.index')
+          ->with('success', 'Website Deleted successfully.');
     }
 }

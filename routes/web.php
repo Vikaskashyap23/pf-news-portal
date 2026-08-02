@@ -3,14 +3,28 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\WebsiteController;
+use App\Http\Controllers\Admin\CategoryController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
+
 Route::get('/websites/create', [WebsiteController::class, 'create']);
 
 Route::resource('websites', WebsiteController::class);
+
+Route::resource('categories', CategoryController::class);
+
+
+Route::get('/admin', function (){
+
+    return view('admin.dashboard');
+
+})->middleware('auth');
+
+
+
 
 
 Route::get('/dashboard', function () {

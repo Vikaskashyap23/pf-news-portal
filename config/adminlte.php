@@ -330,20 +330,20 @@ return [
         ],
         [
             'text' => 'News',
-            'url' => '#',
+            'url' => 'news',
             'icon' => 'fas fa-newspaper',
             
         ],
         [
             'text' => 'Language',
-            'url' => '#',
+            'url' => 'languages',
             'icon' => 'fas fa-language',
 
         ],
 
         [
             'text' => 'Themes',
-            'url'  => '#',
+            'url'  => 'themes',
             'icon' =>  'fas fa-palette',
         ],
 

@@ -349,7 +349,7 @@ return [
 
         [
             'text'  => 'Users',
-            'url'   =>  '#',
+            'url'   =>  'users',
             'icon'  =>   'fas fa-users',
 
         ],
@@ -357,7 +357,7 @@ return [
         [
             'text' => 'Settings',
             'icon' => 'fas fa-cog',
-            'url' => '#',
+            'url' => 'settings',
         ],
         
     ],

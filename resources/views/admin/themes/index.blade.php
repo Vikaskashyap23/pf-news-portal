@@ -39,7 +39,7 @@
 
                 <tr>
 
-                    <td>{{ $theme->id }}</td>
+                    <td>{{ $loop->iteration }}</td>
 
                     <td>{{ $theme->name }}</td>
 

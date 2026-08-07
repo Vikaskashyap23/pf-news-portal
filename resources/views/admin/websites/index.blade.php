@@ -41,7 +41,7 @@
 
                     <tr>
 
-                        <td>{{ $website->id }}</td>
+                        <td>{{ $loop->iteration }}</td>
 
                         <td>{{ $website->name }}</td>
 

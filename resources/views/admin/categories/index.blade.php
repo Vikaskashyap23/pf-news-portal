@@ -45,7 +45,7 @@
 
                     <tr>
 
-                        <td>{{ $category->id }}</td>
+                        <td>{{ $loop->iteration }}</td>
 
                         <td>{{ $category->website->name ?? '-' }}</td>
 

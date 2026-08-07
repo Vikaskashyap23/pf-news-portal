@@ -83,10 +83,24 @@ class LanguageController extends Controller
      */
     public function update(Request $request, string $id)
     {
+
+        //  dd($request->all());
+
         $language = Language::findOrFail($id);
+          
+        $request->validate([
+            'name' => 'required',
+            'code' => [
+                'required',
+                Rule::unique('languages', 'code')->ignore($language->id),
+            ],
+        ]);
+
 
         $language->update([
             'name' => $request->name,
+            'code' => $request->code,
+            'status' => $request->status,
         ]);
 
         return redirect()

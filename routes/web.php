@@ -7,6 +7,9 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\Admin\ThemeController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\SettingController;
+
 
 
 Route::get('/', function () {
@@ -25,6 +28,17 @@ Route::resource('news', NewsController::class);
 Route::resource('languages', LanguageController::class);
 
 Route::resource('themes',ThemeController::class);
+
+Route::resource('users', UserController::class);
+
+Route::get('/settings', [SettingController::class, 'index'])
+       ->name('settings.index');
+
+ Route::put('/settings', [SettingController::class, 'update'])
+          ->name('settings.update');      
+
+Route::put('/users/{id}/status' , [UserController::class, 'toggleStatus'])
+       ->name('users.status');
 
 Route::put('/themes/{id}/status', [ThemeController::class, 'toggleStatus'])
     ->name('themes.status');

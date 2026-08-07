@@ -113,7 +113,10 @@
 
             <div class="form-group mb-3">
                 <label>Description</label>
-                <textarea name="description" rows="6" class="form-control">{{ old('description') }}</textarea>
+                <textarea name="description" 
+                          id = "description"
+                          rows="8" 
+                          class="form-control">{{ old('description') }}</textarea>
             </div>
 
             <div class="mb-3">
@@ -157,6 +160,15 @@
                        value="{{ old('published_at', now()->format('Y-m-d\TH:i')) }}">
             </div>
 
+            <div class="form-group mb-3">
+                <label> Status </label>
+
+                <select name="status" class="form-control">
+                    <option value="draft"> Draft </option>
+                    <option value="published"> published </option>
+                </select>
+            </div>
+
             <button class="btn btn-success">
                 Save News
             </button>
@@ -181,6 +193,30 @@
   });
 
 
+</script>
+
+<script type="module">
+
+    ClassicEditor
+       .create(document.querySelector('#description'),{
+        plugins: [
+            CKEditorPlugins.Essentials,
+            CKEditorPlugins.Paragraph,
+            CKEditorPlugins.Bold,
+            CKEditorPlugins.Italic,
+
+        ],
+        toolbar: [
+            'undo',
+            'redo',
+            '|',
+            'bold',
+            'italic'
+        ]
+       });
+       
+        // console.error(error);
+       
 </script>
 
 @endsection

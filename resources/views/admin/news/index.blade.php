@@ -104,7 +104,7 @@
 
                     <tr>
 
-                        <td>{{ $item->id }}</td>
+                        <td>{{ $loop->iteration }}</td>
 
                         <td>{{ $item->website->name ?? '-' }}</td>
 
@@ -157,14 +157,14 @@
                             @csrf
                             @method('PUT')
 
-                            @if($item->status)
-                            <button type="submit" class="btn btn-success btn-sm">
-                                Active
-                            </button>
+                            @if($item->status == 'published')
+
+                            <span class="badge bg-success"> Published </span>
+                    
                             @else
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                Inactive
-                            </button>
+
+                            <span class="badge bg-warning"> Draft </span>
+
                             @endif
 
                            </form>

@@ -66,6 +66,7 @@ public function create()
            'published_at' => 'nullable|date',
            'language_id' => 'required|exists:languages,id',
            'theme_id'   => 'required|exists:themes,id',
+           'status' => 'required|in:draft,published',
 
            ]);
          
@@ -95,6 +96,7 @@ public function create()
             'published_at' => $request->published_at,
             'language_id' => $request->language_id,
             'theme_id'  => $request->theme_id,
+            'status'  => $request->status,
         ]);
 
         return redirect()
@@ -147,6 +149,7 @@ public function create()
         'description' => 'required',
         'featured_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         'theme_id'   => 'required|exists:themes,id',
+        'status' => 'required|in:draft,published',
 
     ]);
 
@@ -176,6 +179,8 @@ public function create()
         'is_breaking' => $request->has('is_breaking'),
         'is_featured' => $request->has('is_featured'),
         'theme_id'  => $request->theme_id,
+        'status'  => $request->status,
+
 
     ]);
 

@@ -129,6 +129,27 @@
                 <label> Meta Keywords </label>
                 <input type="text" name="meta_keywords" class="form-control" value="{{ $news->meta_keywords }}">
             </div>
+
+
+            
+                 <div class="form-group mb-3">
+                    <label> Status </label>
+        
+                    <select name="status" class="form-control">
+                        <option value="draft"
+                        {{ $news->status == 'draft' ? 'selected' : ''}}>
+                        Draft
+                    </option>
+        
+                    <option value="published"
+                        {{ $news->status == 'published' ? 'selected' : ''}}>
+                        Published
+                        </option>
+                    </select>
+                 </div>
+
+
+
             
             <div class="form-group mb-3">
                 <label>
@@ -159,8 +180,8 @@
             </button>
 
         </div>
+        
     </div>
-
 </form>
 
 @stop

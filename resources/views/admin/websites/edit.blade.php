@@ -33,15 +33,46 @@
             </div>
 
             <div class="mb-3">
-                <label>Language</label>
-                <input type="text" name="language" class="form-control"
-                    value="{{ $website->language }}">
+                <label for="language">Language</label>
+
+                <select name="language" id="language" class="form-control">
+
+                @foreach($languages as $language)
+                  
+                    <option value="{{ $language->code }}"
+
+                       {{ $website->language === $language->code ? 'selected' : '' }}>
+
+                       {{ $language->name }} ({{ $language->code }})
+
+                     </option>
+
+                     @endforeach
+
+                </select>
+                
             </div>
 
             <div class="mb-3">
+
                 <label>Theme</label>
-                <input type="text" name="theme" class="form-control"
-                    value="{{ $website->theme }}">
+                
+                <select name="theme" class="form-control">
+
+                @foreach($themes as $theme)
+
+                 <option value="{{ $theme->slug }}"
+
+                   {{ $website->theme === $theme->slug ? 'selected' : '' }}>
+
+                   {{ $theme->name }} 
+                
+                </option>
+
+                @endforeach
+                  
+                 </select>
+                 
             </div>
 
             <div class="mb-3">

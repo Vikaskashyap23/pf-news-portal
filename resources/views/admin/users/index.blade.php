@@ -8,10 +8,11 @@
 
 @section('content')
 
-<a href="{{ route('users.create') }}" class="btn btn-primary mb-3">
-    Add User
-</a>
-
+@can('users.create')
+    <a href="{{ route('users.create') }}" class="btn btn-primary mb-3">
+        Add User
+    </a>
+@endcan
 <div class="card">
     <div class="card-body">
 
@@ -50,31 +51,39 @@
                         @endif
                     </td>
 
-                    <td>
+                   <td>
 
-                        <a href="{{ route('users.edit' , $user->id) }}" class="btn btn-warning btn-sm">
-
+                        @can('users.edit')
+                         <a href="{{ route('users.edit', $user->id) }}"
+                         class="btn btn-warning btn-sm">
                             Edit
-                            
+                      </a>
+                         @endcan
+
+                     @can('users.edit')
+                    <a href="{{ route('users.permissions', $user->id) }}"
+                    class="btn btn-info btn-sm">
+                    Permissions
                      </a>
-                            
-                    <form action="{{ route('users.destroy', $user->id) }}"
-                           method="POST"
-                           style="display:inline;"
-                           onsubmit="return confirm('Are you sure you want to delete this user?')">
-                        
-                           @csrf
-                           
-                           @method('DELETE')
+                   @endcan
 
+               @can('users.delete')
 
-                           
-                           <button type="submit" class="btn btn-danger btn-sm">
-                               Delete
-                            </button>
-                        </form>
-                    </td>
+             <form action="{{ route('users.destroy', $user->id) }}"
+              method="POST"
+              style="display:inline;"
+              onsubmit="return confirm('Are you sure you want to delete this user?')">
 
+            @csrf
+            @method('DELETE')
+
+            <button type="submit" class="btn btn-danger btn-sm">
+                Delete
+            </button>
+        </form>
+    @endcan
+
+</td>
                 </tr>
 
             @endforeach

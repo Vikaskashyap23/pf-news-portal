@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Website;
+use App\Models\Language;
+
 // use App\Http\Requests\StoreWebsiteRequest;
 
 class WebsiteController extends Controller
@@ -47,7 +49,9 @@ class WebsiteController extends Controller
 
         ]);
 
-        return "Website saved Succesfullly";
+        return redirect()
+          ->route('websites.index')
+          ->with('success', 'Website saved successfully.');
     }
 
     /**
@@ -65,7 +69,15 @@ class WebsiteController extends Controller
     {
         $website = Website::findOrFail($id);
 
-        return view('admin.websites.edit', compact('website'));
+        $languages = Language::where('status', true)
+            ->orderBy('name')
+            ->get();
+
+        $themes = \App\Models\Theme::where('status', 1)
+        ->orderBy('name')
+        ->get();
+
+        return view('admin.websites.edit', compact('website','languages', 'themes'));
     }
 
     /**

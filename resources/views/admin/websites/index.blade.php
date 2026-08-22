@@ -19,6 +19,19 @@
         <h3 class="card-title">All Websites</h3>
     </div>
 
+    @if(session('success'))
+     <div class="alert alert-success alert-dismissible fade show" role="alert">
+
+        <i class="fas fa-check-circle"></i>
+
+        {{ session('success') }}
+
+        <button type="button" class="close" data-dismiss="alert" arie-label="Close">
+            <span aria-hidden="true"> &times; </span>
+        </button>
+     </div>
+     @endif
+
     <div class="card-body">
 
         <table class="table table-bordered table-hover">

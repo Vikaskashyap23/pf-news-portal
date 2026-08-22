@@ -11,7 +11,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        
+          $middleware->alias([
+
+             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+
+             'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+          ]);
+
+          $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
+          ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

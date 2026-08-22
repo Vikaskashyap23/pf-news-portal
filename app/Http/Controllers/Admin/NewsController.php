@@ -89,7 +89,7 @@ public function create()
             'meta_description' => $request->meta_description,
             'meta_title' => $request->meta_title,
             'meta_keywords' => $request->meta_keywords,
-            'status' => 1,
+            // 'status' => 1,
             'featured_image' => $featuredImage,
             'is_breaking' => $request->has('is_breaking'),
             'is_featured' => $request->has('is_featured'),

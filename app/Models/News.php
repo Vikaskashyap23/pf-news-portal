@@ -11,7 +11,6 @@ class News extends Model
         'category_id',
         'title',
         'slug',
-        'featured_image',
         'description',
         'meta_title',
         'meta_description',
@@ -24,6 +23,12 @@ class News extends Model
         'language_id',
         'theme_id',
 
+    ];
+
+    protected $casts = [
+        'published_at' => 'datetime',
+        'is_featured'  =>  'boolean',
+        'is_breaking'  =>  'boolean',
     ];
 
     public function website()

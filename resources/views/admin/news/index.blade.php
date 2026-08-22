@@ -6,9 +6,11 @@
     <div class="d-flex justify-content-between">
         <h1>News</h1>
 
-        <a href="{{ route('news.create') }}" class="btn btn-primary">
-            Add News
-        </a>
+        @can('news.create')
+    <a href="{{ route('news.create') }}" class="btn btn-primary">
+        Add News
+    </a>
+@endcan
     </div>
 @stop
 
@@ -175,31 +177,38 @@
                         <td>{{ $item->created_at->format('d M Y') }} </td>
 
 
-                        <td>
+<td>
 
-                            <a href="{{ route('news.edit',$item->id) }}"
-                               class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
+    @can('news.edit')
+        <a href="{{ route('news.edit', $item->id) }}"
+           class="btn btn-warning btn-sm">
+            Edit
+        </a>
+    @endcan
 
-                            <form action="{{ route('news.destroy',$item->id) }}"
-                                  method="POST"
-                                  style="display:inline">
+    @can('news.delete')
+        <form action="{{ route('news.destroy', $item->id) }}"
+              method="POST"
+              style="display:inline">
 
-                                @csrf
-                                @method('DELETE')
+            @csrf
+            @method('DELETE')
 
-                                <button class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Delete this news?')">
+            <button class="btn btn-danger btn-sm"
+                    onclick="return confirm('Delete this news?')">
+                Delete
+            </button>
 
-                                    Delete
+        </form>
+    @endcan
 
-                                </button>
+    @cannot('news.edit')
+        @cannot('news.delete')
+            <span class="text-muted">No Action</span>
+        @endcannot
+    @endcannot
 
-                            </form>
-
-                        </td>
-
+</td>
 
                     </tr>
 

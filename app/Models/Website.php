@@ -16,4 +16,14 @@ class Website extends Model
         'domain',
         'status',
     ];
+
+    public function categories()
+
+    {
+        return $this->hasMany(Category::class);
+    }
+    public function news()
+    {
+        return $this->hasMany(News::class);
+    }
 }

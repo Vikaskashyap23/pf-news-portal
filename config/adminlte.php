@@ -299,69 +299,80 @@ return [
     */
 
      'menu' => [
-        // Navbar items:
-        [
-            'type' => 'navbar-search',
-            'text' => 'search',
-            'topnav_right' => true,
-        ],
-        [
-            'type' => 'fullscreen-widget',
-            'topnav_right' => true,
-        ],
 
-        // Sidebar items:
-        [
-            'text' => 'Dashboard',
-            'url'  => 'admin',
-            'icon' => 'fas fa-home',
-        ],
-        
-        ['header' => 'CMS MANAGEMENT'],
-        [
-            'text' => 'Websites',
-            'url' => 'websites',
-            'icon' => 'fas fa-globe',
-        ],
-        [
-            'text' => 'Categories',
-            'url' => 'categories',
-            'icon' => 'fas fa-list',
-        ],
-        [
-            'text' => 'News',
-            'url' => 'news',
-            'icon' => 'fas fa-newspaper',
-            
-        ],
-        [
-            'text' => 'Language',
-            'url' => 'languages',
-            'icon' => 'fas fa-language',
+    // Navbar items
+    [
+        'type' => 'navbar-search',
+        'text' => 'search',
+        'topnav_right' => true,
+    ],
 
-        ],
+    [
+        'type' => 'fullscreen-widget',
+        'topnav_right' => true,
+    ],
 
-        [
-            'text' => 'Themes',
-            'url'  => 'themes',
-            'icon' =>  'fas fa-palette',
-        ],
-
-        [
-            'text'  => 'Users',
-            'url'   =>  'users',
-            'icon'  =>   'fas fa-users',
-
-        ],
-      ['header' => 'SETTINGS'],
-        [
-            'text' => 'Settings',
-            'icon' => 'fas fa-cog',
-            'url' => 'settings',
-        ],
+    // Sidebar
+    [
+        'text' => 'Dashboard',
+        'url' => 'admin',
+        'icon' => 'fas fa-home',
         
     ],
 
+    ['header' => 'CMS MANAGEMENT'],
+
+    [
+        'text' => 'Websites',
+        'url' => 'websites',
+        'icon' => 'fas fa-globe',
+        'can' => 'websites.view',
+    ],
+
+    [
+        'text' => 'Categories',
+        'url' => 'categories',
+        'icon' => 'fas fa-list',
+        'can' => 'categories.view',
+    ],
+
+    [
+        'text' => 'News',
+        'url' => 'news',
+        'icon' => 'fas fa-newspaper',
+        'can' => 'news.view',
+    ],
+
+    [
+        'text' => 'Language',
+        'url' => 'languages',
+        'icon' => 'fas fa-language',
+        'can' => 'languages.view',
+    ],
+
+    [
+        'text' => 'Themes',
+        'url' => 'themes',
+        'icon' => 'fas fa-palette',
+        'can' => 'themes.view',
+    ],
+
+    [
+        'text' => 'Users',
+        'url' => 'users',
+        'icon' => 'fas fa-users',
+        'can' => 'users.view',
+    ],
+
+    ['header' => 'SETTINGS'],
+
+    [
+        'text' => 'Settings',
+        'url' => 'settings',
+        'icon' => 'fas fa-cog',
+        'can' => 'settings.view',
+    ],
+],
     /*
     |--------------------------------------------------------------------------
     | Menu Filters

@@ -77,6 +77,67 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
+
+    public function permissions(string $id)
+
+    {
+
+    $user = User::findOrFail($id);
+
+    $permissions = \App\Models\Permission::orderBy('module')
+        ->orderBy('name')
+        ->get();
+
+    $userPermissions = \DB::table('user_permissions')
+        ->where('user_id', $user->id)
+        ->pluck('effect', 'permission_id');
+
+    return view('admin.users.permissions', compact(
+        'user',
+        'permissions',
+        'userPermissions'
+    ));
+
+   }
+
+
+          
+   public function updatePermissions(Request $request, string $id)
+
+   {
+
+    $user = User::findOrFail($id);
+
+    $permissions = $request->input('permissions', []);
+
+    \DB::table('user_permissions')
+        ->where('user_id', $user->id)
+        ->delete();
+
+    foreach ($permissions as $permissionId => $effect) {
+
+        if (!in_array($effect, ['allow', 'deny'])) {
+            continue;
+        }
+
+        \DB::table('user_permissions')->insert([
+            'user_id' => $user->id,
+            'permission_id' => $permissionId,
+            'effect' => $effect,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    return redirect()
+        ->route('users.permissions', $user->id)
+        ->with('success', 'User permissions updated successfully.');
+        
+    }
+
+       
+
+
     public function update(Request $request, string $id)
     {
         $user = User::findOrFail($id);

@@ -211,9 +211,7 @@
                    z-[300]">
 
             <a
-                href="{{ route('frontend.website', [
-                    'slug' => $website->slug
-                ]) }}"
+                href="{{ frontend_home_url() }}"
                 class="block px-4 py-3
                        rounded-lg
                        text-sm font-bold
@@ -228,10 +226,7 @@
             @foreach($categories as $category)
 
                 <a
-                    href="{{ route('frontend.category', [
-                        'websiteSlug' => $website->slug,
-                        'categorySlug' => $category->slug
-                    ]) }}"
+                    href="{{ frontend_category_url($category->slug) }}"
                     class="block px-4 py-3
                            rounded-lg
                            text-sm font-semibold
@@ -244,6 +239,20 @@
                 </a>
 
             @endforeach
+
+        
+                             
+        <a href="{{ route('frontend.themes', ['websiteSlug' => $website->slug]) }}"
+          class="sans px-4 py-3
+          text-[11px] font-black uppercase
+          tracking-wider
+          text-[#b91c1c]
+          hover:bg-[#ded8c9]
+          transition">
+
+           🎨 Themes
+
+      </a>
 
         </div>
 
@@ -263,7 +272,7 @@
             p-3
             z-[60]">
 
-       <a href="{{ route('frontend.website', ['slug' => $website->slug]) }}"
+       <a href="{{ frontend_home_url() }}"
        class="block px-4 py-3
               rounded-lg
               text-sm font-bold
@@ -276,10 +285,7 @@
 
     @foreach($categories as $category)
 
-        <a href="{{ route('frontend.category', [
-            'websiteSlug' => $website->slug,
-            'categorySlug' => $category->slug
-        ]) }}"
+        <a href="{{ frontend_category_url($category->slug) }}"
            class="block px-4 py-3
                   rounded-lg
                   text-sm font-semibold
@@ -310,7 +316,7 @@
 
                 {{-- HOME --}}
 
-                <a href="{{ route('frontend.website', ['slug' => $website->slug]) }}"
+                <a href="{{ frontend_home_url() }}"
                    class="relative py-4
                           text-xs font-black uppercase
                           tracking-wide
@@ -329,10 +335,7 @@
 
                 @foreach($categories as $category)
 
-            <a href="{{ route('frontend.category', [
-                     'websiteSlug' => $website->slug,
-                     'categorySlug' => $category->slug
-                     ]) }}"
+            <a href="{{ frontend_category_url($category->slug) }}"
                class="relative py-4
               text-xs font-bold uppercase
               tracking-wide
@@ -420,10 +423,7 @@
 
                     @foreach($breakingNews as $breaking)
 
-                        <a href="{{ route('frontend.news' , [
-                              'websiteSlug' => $website->slug,
-                              'newsSlug'  => $breaking->slug
-                              ]) }}"
+                        <a href="{{ frontend_news_url($breaking->slug) }}"
                            class="group flex items-center gap-3
                                   text-sm font-semibold
                                   text-gray-200
@@ -653,10 +653,7 @@
 
                                 </div>
 
-                               <a href="{{ route('frontend.news' , [
-                                        'websiteSlug' => $website->slug,
-                                        'newsSlug' => $hero->slug
-                                        ]) }}"
+                               <a href="{{ frontend_news_url($hero->slug) }}"
                                         class="block">
                                 <h1 class="font-serif
                                            text-3xl
@@ -842,10 +839,7 @@
 
                                     </div>
 
-                                     <a href="{{ route('frontend.news', [
-                                              'websiteSlug' => $website->slug,
-                                              'newsSlug'  => $item->slug
-                                              ]) }}"
+                                     <a href="{{ frontend_news_url($item->slug) }}"
                                               class="block">
                                     <h3 class="font-serif
                                                text-lg
@@ -1118,10 +1112,7 @@
 
                                 {{-- Headline --}}
 
-                                <a href="{{ route('frontend.news', [
-                                         'websiteSlug' => $website->slug,
-                                         'newsSlug' => $item->slug
-                                         ]) }}"
+                                <a href="{{ frontend_news_url($item->slug) }}"
                                          class="block">
                                 <h3 class="font-serif
                                            text-xl
@@ -1736,7 +1727,7 @@
 
                 <div class="space-y-3 text-sm">
 
-                    <a href="{{ route('frontend.website', ['slug' => $website->slug]) }}"
+                    <a href="{{ frontend_home_url() }}"
                        class="block text-gray-400
                               hover:text-white
                               hover:translate-x-1
@@ -1809,10 +1800,7 @@
                 <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
 
                @foreach($categories->take(10) as $category)
-                <a href="{{ route('frontend.category', [
-                'websiteSlug' => $website->slug,
-                'categorySlug' => $category->slug
-                 ]) }}"
+                <a href="{{ frontend_category_url($category->slug) }}"
                class="text-gray-400
               hover:text-red-500
               transition">
@@ -2110,7 +2098,7 @@
 
 
             <form
-                action="{{ route('frontend.search', ['slug' => $website->slug]) }}"
+                action="{{ frontend_search_url() }}"
                 method="GET"
                 class="flex gap-2">
 

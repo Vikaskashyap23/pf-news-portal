@@ -1,19 +1,16 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
 
 <head>
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>
-        {{ $news->title }} | {{ $website->name }}
-    </title>
+    <title>{{ $news->title }} - {{ $website->name }}</title>
 
     <meta name="description"
-          content="{{ \Illuminate\Support\Str::limit(strip_tags($news->description), 160) }}">
+          content="{{ \Illuminate\Support\Str::limit(strip_tags($news->description ?? ''), 160) }}">
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -22,258 +19,351 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'Arial', 'sans-serif'],
-                        serif: ['Georgia', 'Times New Roman', 'serif'],
+                        sans: [
+                            'Inter',
+                            'Arial',
+                            'Helvetica',
+                            'sans-serif'
+                        ]
+                    },
+                    colors: {
+                        cream: '#f7f7f4',
+                        ink: '#161616',
+                        muted: '#777777',
+                        soft: '#eeeeea'
                     }
                 }
             }
         }
     </script>
 
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: #f7f7f4;
+            color: #171717;
+            font-family:
+                Inter,
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        .container-main {
+            width: min(1440px, 100%);
+            margin: auto;
+        }
+
+        .soft-card {
+            background: white;
+            border: 1px solid #eeeeea;
+            border-radius: 22px;
+            box-shadow:
+                0 10px 35px rgba(0, 0, 0, .035);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 0;
+            height: 1px;
+            background: #111;
+            transition: .3s;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .story-image {
+            transition:
+                transform .45s ease;
+        }
+
+        .story-card:hover .story-image {
+            transform: scale(1.04);
+        }
+
+        .article-content {
+            color: #404040;
+            font-size: 17px;
+            line-height: 1.9;
+        }
+
+        .article-content h1,
+        .article-content h2,
+        .article-content h3,
+        .article-content h4 {
+            color: #111111;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .article-content h1 {
+            font-size: 2rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.7rem;
+        }
+
+        .article-content h3 {
+            font-size: 1.4rem;
+        }
+
+        .article-content h4 {
+            font-size: 1.2rem;
+        }
+
+        .article-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .article-content a {
+            color: #111111;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .article-content ul {
+            list-style: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .article-content ol {
+            list-style: decimal;
+            padding-left: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .article-content li {
+            margin-bottom: .5rem;
+        }
+
+        .article-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.25rem;
+            border-left: 4px solid #111111;
+            background: #f7f7f4;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .article-content img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 1.75rem auto;
+            border-radius: 18px;
+        }
+
+        .article-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .article-content th,
+        .article-content td {
+            border: 1px solid #e5e5e5;
+            padding: .75rem;
+            text-align: left;
+        }
+
+        .article-content th {
+            background: #f7f7f4;
+            color: #111111;
+            font-weight: 700;
+        }
+
+        .article-content strong {
+            color: #111111;
+            font-weight: 700;
+        }
+
+        .article-content hr {
+            border: 0;
+            border-top: 1px solid #e5e5e5;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+
+            .article-content {
+                font-size: 16px;
+                line-height: 1.8;
+            }
+
+            .article-content h1 {
+                font-size: 1.7rem;
+            }
+
+            .article-content h2 {
+                font-size: 1.5rem;
+            }
+
+        }
+
+    </style>
+
 </head>
 
 
-<body class="bg-[#f4f1eb] text-[#171717]">
+<body>
 
 
-{{-- ========================================================= --}}
-{{-- TOP BLACK UTILITY BAR --}}
-{{-- ========================================================= --}}
+{{-- ============================================================
+     PAGE DATA
+============================================================ --}}
 
-<div class="bg-[#111111] text-gray-300">
+@php
 
-    <div class="max-w-7xl mx-auto
-                px-4 sm:px-6 lg:px-8
-                h-10
-                flex items-center
-                justify-between">
+    /*
+    |--------------------------------------------------------------------------
+    | Categories
+    |--------------------------------------------------------------------------
+    */
 
-        <div class="flex items-center gap-2
-                    text-[10px]
-                    uppercase
-                    tracking-[0.22em]
-                    font-bold">
-
-            <span class="w-2 h-2
-                         rounded-full
-                         bg-[#a71930]">
-            </span>
-
-            Independent • Fast • Trusted News
-
-        </div>
-
-        <div class="hidden sm:block
-                    text-[10px]
-                    uppercase
-                    tracking-widest
-                    text-gray-500">
-
-            {{ now()->format('l, d F Y') }}
-
-        </div>
-
-    </div>
-
-</div>
+    $categories = \App\Models\Category::where('website_id', $website->id)
+        ->where('status', true)
+        ->orderBy('name')
+        ->get();
 
 
-{{-- ========================================================= --}}
-{{-- PREMIUM CLASSIC HEADER --}}
-{{-- ========================================================= --}}
+    /*
+    |--------------------------------------------------------------------------
+    | Latest News
+    |--------------------------------------------------------------------------
+    */
 
-<header class="sticky top-0 z-50
-               bg-[#f8f5ef]/95
-               backdrop-blur-md
-               border-b border-[#d4cec3]
-               shadow-sm">
-
-    <div class="max-w-7xl mx-auto
-                px-4 sm:px-6 lg:px-8">
-
-
-        {{-- BRAND ROW --}}
-
-        <div class="min-h-[92px]
-                    flex items-center
-                    justify-between
-                    gap-5">
+    $latestNews = \App\Models\News::where('website_id', $website->id)
+        ->where('status', 'published')
+        ->where('id', '!=', $news->id)
+        ->where(function ($query) {
+            $query->whereNull('published_at')
+                ->orWhere('published_at', '<=', now());
+        })
+        ->latest('published_at')
+        ->latest('id')
+        ->take(6)
+        ->get();
 
 
-            {{-- BRAND --}}
+    /*
+    |--------------------------------------------------------------------------
+    | Breaking News
+    |--------------------------------------------------------------------------
+    */
 
-            <a href="{{ route('frontend.website', [
-                    'slug' => $website->slug
-                ]) }}"
-               class="flex items-center gap-4
-                      group
-                      min-w-0">
+    $breakingNews = \App\Models\News::where('website_id', $website->id)
+        ->where('status', 'published')
+        ->where('is_breaking', true)
+        ->where('id', '!=', $news->id)
+        ->where(function ($query) {
+            $query->whereNull('published_at')
+                ->orWhere('published_at', '<=', now());
+        })
+        ->latest('published_at')
+        ->latest('id')
+        ->take(5)
+        ->get();
 
 
-                {{-- CLASSIC LOGO --}}
+    /*
+    |--------------------------------------------------------------------------
+    | Basic Information
+    |--------------------------------------------------------------------------
+    */
 
-                <div class="relative
-                            w-12 h-12
-                            sm:w-14 sm:h-14
-                            flex-shrink-0
-                            bg-[#a71930]
-                            text-white
-                            flex items-center
-                            justify-center
-                            shadow-md
-                            group-hover:bg-[#8d1428]
-                            transition">
+    $siteName = $website->name ?? 'NewsHub';
 
-                    <span class="font-serif
-                                 text-2xl sm:text-3xl
-                                 font-black">
+    $categoryName = optional($news->category)->name ?? 'News';
 
-                        {{ strtoupper(substr($website->name, 0, 1)) }}
+    $publishedDate = $news->published_at
+        ? \Carbon\Carbon::parse($news->published_at)
+        : null;
 
-                    </span>
+@endphp
+
+
+{{-- ============================================================
+     HEADER
+============================================================ --}}
+
+<header class="bg-white border-b border-gray-100">
+
+    <div class="container-main px-5 lg:px-10">
+
+        <div class="h-[76px] flex items-center justify-between gap-8">
+
+
+            {{-- LOGO --}}
+
+            <a href="{{ frontend_home_url() }}"
+               class="shrink-0">
+
+                <div class="text-[27px]
+                            sm:text-[31px]
+                            font-black
+                            tracking-[-1.5px]
+                            text-black">
+
+                    {{ $siteName }}
 
                 </div>
 
+                <div class="text-[8px]
+                            uppercase
+                            tracking-[.28em]
+                            text-gray-400
+                            mt-[-2px]">
 
-                {{-- WEBSITE NAME --}}
-
-                <div class="min-w-0">
-
-                    <div class="font-serif
-                                text-2xl sm:text-3xl lg:text-4xl
-                                font-black
-                                tracking-tight
-                                text-[#171717]
-                                truncate">
-
-                        {{ $website->name }}
-
-                    </div>
-                         <div class="hidden sm:block
-                                mt-1
-                                text-[9px]
-                                uppercase
-                                tracking-[0.35em]
-                                font-bold
-                                text-gray-500">
-
-                        News • Ideas • Perspective
-
-                    </div>
+                    News & Lifestyle
 
                 </div>
 
             </a>
 
 
-            {{-- HEADER RIGHT --}}
+            {{-- DESKTOP NAVIGATION --}}
 
-            <div class="flex items-center gap-3">
+            <nav class="hidden lg:flex items-center gap-7">
 
-                <a href="{{ route('frontend.website', [
-                        'slug' => $website->slug
-                    ]) }}"
-                   class="hidden sm:flex
-                          items-center
-                          gap-2
-                          border border-[#bcb5a9]
-                          px-4 py-2.5
-                          text-[10px]
-                          uppercase
-                          tracking-widest
-                          font-black
-                          text-[#292524]
-                          hover:bg-[#a71930]
-                          hover:border-[#a71930]
-                          hover:text-white
-                          transition">
-
-                    ← Home
-
-                </a>
-
-                <span class="hidden md:block
-                             w-px h-7
-                             bg-[#d0c9be]">
-                </span>
-
-                <span class="hidden md:block
-                             text-[9px]
-                             uppercase
-                             tracking-widest
-                             font-bold
-                             text-gray-400">
-
-                    News Desk
-
-                </span>
-
-            </div>
-
-        </div>
-
-
-        {{-- CATEGORY NAVIGATION --}}
-
-        <nav class="border-t border-[#ded8ce]">
-
-            <div class="flex items-center
-                        gap-7
-                        overflow-x-auto
-                        whitespace-nowrap
-                        scrollbar-hide">
-
-
-                <a href="{{ route('frontend.website', [
-                        'slug' => $website->slug
-                    ]) }}"
-                   class="relative
-                          py-4
-                          text-[10px]
-                          uppercase
-                          tracking-[0.16em]
-                          font-black
-                          text-[#a71930]">
+                <a href="{{ frontend_home_url() }}"
+                   class="nav-link text-[12px] font-semibold">
 
                     Home
 
-                    <span class="absolute
-                                 left-0 right-0
-                                 bottom-0
-                                 h-0.5
-                                 bg-[#a71930]">
-                    </span>
-
                 </a>
 
 
-                @php
+                @foreach($categories->take(7) as $category)
 
-                    $categories = \App\Models\Category::where(
-                        'website_id',
-                        $website->id
-                    )
-                    ->where('status', true)
-                    ->latest()
-                    ->get();
-
-                @endphp
-
-
-                @foreach($categories as $category)
-
-                    <a href="{{ route('frontend.category', [
-                            'websiteSlug' => $website->slug,
-                            'categorySlug' => $category->slug
-                        ]) }}"
-                       class="py-4
-                              text-[10px]
-                              uppercase
-                              tracking-[0.16em]
-                              font-bold
+                    <a href="{{ frontend_category_url($category->slug) }}"
+                       class="nav-link
+                              text-[12px]
                               text-gray-500
-                              hover:text-[#a71930]
-                              transition">
+                              hover:text-black
+                              font-medium">
 
                         {{ $category->name }}
 
@@ -281,97 +371,158 @@
 
                 @endforeach
 
+
+                <a href="{{ route('frontend.themes', [
+                    'websiteSlug' => $website->slug
+                ]) }}"
+                   class="nav-link
+                          text-[12px]
+                          font-semibold">
+
+                    Themes
+
+                </a>
+
+            </nav>
+
+
+            {{-- RIGHT SIDE --}}
+
+            <div class="flex items-center gap-3">
+
+                <a href="{{ route('frontend.domain.search') }}"
+                   class="w-9 h-9
+                          rounded-full
+                          border border-gray-200
+                          flex items-center
+                          justify-center
+                          hover:bg-black
+                          hover:text-white
+                          transition">
+
+                    <svg class="w-4 h-4"
+                         fill="none"
+                         stroke="currentColor"
+                         viewBox="0 0 24 24">
+
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="m21 21-4.3-4.3m2.3-5.7a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"/>
+
+                    </svg>
+
+                </a>
+
+
+                <button class="lg:hidden
+                               w-9 h-9
+                               rounded-full
+                               border border-gray-200">
+
+                    <svg class="w-4 h-4 mx-auto"
+                         fill="none"
+                         stroke="currentColor"
+                         viewBox="0 0 24 24">
+
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M4 6h16M4 12h16M4 18h16"/>
+
+                    </svg>
+
+                </button>
+
             </div>
 
-        </nav>
+        </div>
+
+
+        {{-- MOBILE NAVIGATION --}}
+
+        <div class="lg:hidden
+                    flex gap-5
+                    overflow-x-auto
+                    pb-4">
+
+            <a href="{{ frontend_home_url() }}"
+               class="shrink-0
+                      text-xs
+                      font-semibold">
+
+                Home
+
+            </a>
+
+
+            @foreach($categories->take(8) as $category)
+
+                <a href="{{ frontend_category_url($category->slug) }}"
+                   class="shrink-0
+                          text-xs
+                          text-gray-500">
+
+                    {{ $category->name }}
+
+                </a>
+
+            @endforeach
+
+        </div>
 
     </div>
 
 </header>
 
 
-{{-- ========================================================= --}}
-{{-- BREAKING NEWS STRIP --}}
-{{-- ========================================================= --}}
-
-@php
-
- $breakingNews = \App\Models\News::where(
-        'website_id',
-        $website->id
-    )
-    ->where('status', 'published')
-    ->where('is_breaking', true)
-    ->where('id', '!=', $news->id)
-    ->where(function ($query) {
-
-        $query->whereNull('published_at')
-              ->orWhere('published_at', '<=', now());
-
-    })
-    ->latest('published_at')
-    ->take(5)
-    ->get();
-
-@endphp
-
+{{-- ============================================================
+     BREAKING NEWS
+============================================================ --}}
 
 @if($breakingNews->count())
 
-<section class="bg-[#191919]
-                text-white
-                border-b border-black">
+    <div class="bg-[#111] text-white">
 
-    <div class="max-w-7xl mx-auto
-                flex items-stretch">
+        <div class="container-main px-5 lg:px-10">
 
-        <div class="flex-shrink-0
-                    bg-[#a71930]
-                    px-5
-                    py-3
-                    flex items-center
-                    gap-2
-                    text-[10px]
-                    uppercase
-                    tracking-[0.16em]
-                    font-black">
+            <div class="min-h-[42px]
+                        flex items-center
+                        gap-4
+                        overflow-hidden">
 
-            <span class="w-2 h-2
-                         rounded-full
-                         bg-white
-                         animate-pulse">
-            </span>
+                <span class="shrink-0
+                             text-[9px]
+                             uppercase
+                             tracking-[.2em]
+                             font-bold">
 
-            Breaking
+                    Breaking
 
-        </div>
+                </span>
 
 
-        <div class="flex-1
-                    overflow-x-auto
-                    whitespace-nowrap">
+                <div class="h-3 w-px bg-gray-600"></div>
 
-            <div class="flex items-center
-                        gap-8
-                        px-5 py-3">
 
-                @foreach($breakingNews as $breaking)
+                <div class="flex gap-10
+                            overflow-x-auto
+                            whitespace-nowrap">
 
-                    <a href="{{ route('frontend.news', [
-                            'websiteSlug' => $website->slug,
-                            'newsSlug' => $breaking->slug
-                        ]) }}"
-                       class="text-sm
-                              font-semibold
-                              text-gray-300
-                              hover:text-white
-                              transition">
+                    @foreach($breakingNews as $breaking)
 
-                        {{ $breaking->title }}
+                        <a href="{{ frontend_news_url($breaking->slug) }}"
+                           class="text-[11px]
+                                  text-gray-300
+                                  hover:text-white">
 
-                    </a>
+                            {{ $breaking->title }}
 
-                @endforeach
+                        </a>
+
+                    @endforeach
+
+                </div>
 
             </div>
 
@@ -379,680 +530,593 @@
 
     </div>
 
-</section>
-
 @endif
 
 
-{{-- ========================================================= --}}
-{{-- MAIN ARTICLE AREA --}}
-{{-- ========================================================= --}}
+{{-- ============================================================
+     MAIN CONTENT
+============================================================ --}}
 
-<main class="max-w-7xl mx-auto
-             px-4 sm:px-6 lg:px-8
-             py-10 sm:py-14">
+<main class="container-main
+             px-5 lg:px-10
+             py-8 lg:py-12">
 
 
-    {{-- BREADCRUMB --}}
+    {{-- ========================================================
+         BREADCRUMB
+    ========================================================= --}}
 
     <div class="flex items-center
+                flex-wrap
                 gap-2
-                text-[9px]
-                uppercase
-                tracking-[0.18em]
-                font-bold
+                text-xs
                 text-gray-400
-                mb-8">
+                mb-7">
 
-        <a href="{{ route('frontend.website', [
-                'slug' => $website->slug
-            ]) }}"
-           class="hover:text-[#a71930]">
+        <a href="{{ frontend_home_url() }}"
+           class="hover:text-black transition">
 
             Home
 
         </a>
 
-        <span>/</span>
-
-        <span class="text-[#a71930]">
-
-            {{ $news->category->name ?? 'News' }}
-
-        </span>
 
         <span>/</span>
+
+
+        @if($news->category)
+
+            <a href="{{ frontend_category_url($news->category->slug) }}"
+               class="hover:text-black transition">
+
+                {{ $categoryName }}
+
+            </a>
+
+            <span>/</span>
+
+        @endif
+
 
         <span class="text-gray-500">
 
-            Story
+            Article
 
         </span>
 
     </div>
 
 
+    {{-- ========================================================
+         ARTICLE + SIDEBAR
+    ========================================================= --}}
+
     <div class="grid
                 lg:grid-cols-12
-                gap-10
-                lg:gap-12">
+                gap-8
+                lg:gap-10">
 
 
-        {{-- ================================================= --}}
-        {{-- MAIN STORY --}}
-        {{-- ================================================= --}}
+        {{-- ====================================================
+             ARTICLE
+        ===================================================== --}}
 
         <article class="lg:col-span-8">
 
 
-            {{-- CATEGORY LABEL --}}
+            {{-- CATEGORY --}}
 
-            <div class="flex items-center gap-3 mb-5">
+            <div class="mb-5">
 
-                <span class="w-10 h-1
-                             bg-[#a71930]">
-                </span>
+                <a href="{{ $news->category
+                    ? frontend_category_url($news->category->slug)
+                    : frontend_home_url()
+                }}"
+                   class="inline-flex
+                          items-center
+                          px-3
+                          py-1.5
+                          rounded-full
+                          bg-black
+                          text-white
+                          text-[9px]
+                          uppercase
+                          tracking-[.18em]
+                          font-bold">
 
-                <span class="text-[10px]
-                             uppercase
-                             tracking-[0.22em]
-                             font-black
-                             text-[#a71930]">
+                    {{ $categoryName }}
 
-                    {{ $news->category->name ?? 'News' }}
-
-                </span>
+                </a>
 
             </div>
 
 
-            {{-- BIG CLASSIC HEADLINE --}}
+            {{-- TITLE --}}
 
-            <h1 class="font-serif
-                       text-4xl
+            <h1 class="text-4xl
                        sm:text-5xl
-                       lg:text-[62px]
-                       leading-[0.98]
+                       lg:text-[58px]
+                       xl:text-[64px]
+                       leading-[1]
+                       tracking-[-2.5px]
                        font-black
-                       tracking-[-0.025em]
-                       text-[#171717]">
-              {{ $news->title }}
+                       text-black">
+
+                {{ $news->title }}
 
             </h1>
 
 
-            {{-- SHORT INTRO --}}
+            {{-- META --}}
 
-            @if($news->description)
+            <div class="flex flex-wrap
+                        items-center
+                        gap-3
+                        mt-6
+                        pb-6
+                        border-b
+                        border-gray-200">
 
-                <p class="mt-7
-                          font-serif
-                          text-lg
-                          sm:text-xl
-                          leading-8
-                          text-gray-600
-                          max-w-3xl">
+                @if($publishedDate)
 
-                    {{ \Illuminate\Support\Str::limit(
-                        strip_tags($news->description),
-                        260
-                    ) }}
+                    <span class="text-[10px]
+                                 uppercase
+                                 tracking-widest
+                                 text-gray-500">
 
-                </p>
+                        {{ $publishedDate->format('d M Y') }}
+
+                    </span>
+
+
+                    <span class="text-gray-300">
+
+                        •
+
+                    </span>
+
+
+                    <span class="text-[10px]
+                                 uppercase
+                                 tracking-widest
+                                 text-gray-400">
+
+                        {{ $publishedDate->diffForHumans() }}
+
+                    </span>
+
+                @endif
+
+
+                @if($news->category)
+
+                    <span class="text-gray-300">
+
+                        •
+
+                    </span>
+
+
+                    <span class="text-[10px]
+                                 uppercase
+                                 tracking-widest
+                                 text-gray-400">
+
+                        {{ $categoryName }}
+
+                    </span>
+
+                @endif
+
+            </div>
+
+
+            {{-- FEATURED IMAGE --}}
+
+            @if(!empty($news->image))
+
+                <div class="mt-8
+                            overflow-hidden
+                            rounded-[28px]
+                            bg-white
+                            border
+                            border-[#eeeeea]">
+
+                    <img src="{{ asset('storage/' . $news->image) }}"
+                         alt="{{ $news->title }}"
+                         class="w-full
+                                max-h-[650px]
+                                object-cover">
+
+                </div>
 
             @endif
 
 
-            {{-- META ROW --}}
+            {{-- ARTICLE BODY --}}
 
-            <div class="mt-7
-                        py-4
-                        border-y
-                        border-[#d5cec3]
-                        flex flex-wrap
+            <div class="soft-card
+                        mt-8
+                        p-6
+                        sm:p-8
+                        lg:p-10">
+
+                <div class="article-content">
+
+                    {!! $news->description !!}
+
+                </div>
+
+            </div>
+
+
+            {{-- BACK BUTTON --}}
+
+            <div class="flex
+                        flex-wrap
                         items-center
                         justify-between
-                        gap-4">
+                        gap-4
+                        mt-8">
 
-
-                <div class="flex items-center
-                            gap-3">
-
-                    <div class="w-9 h-9
-                                bg-[#171717]
-                                text-white
-                                flex items-center
-                                justify-center
-                                font-serif
-                                font-bold">
-
-                        {{ strtoupper(substr($website->name, 0, 1)) }}
-
-                    </div>
-
-
-                    <div>
-
-                        <div class="text-[10px]
-                                    uppercase
-                                    tracking-widest
-                                    font-black">
-
-                            {{ $website->name }}
-
-                        </div>
-
-                        <div class="text-[10px]
-                                    text-gray-500
-                                    mt-1">
-
-                            News Desk
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="text-right
-                            text-[10px]
-                            uppercase
-                            tracking-widest
-                            text-gray-500">
-
-                    <div>
-
-                        {{ optional($news->published_at)->format('d F Y') }}
-
-                    </div>
-
-                    @if($news->published_at)
-
-                        <div class="mt-1">
-
-                            {{ $news->published_at->diffForHumans() }}
-
-                        </div>
-
-                    @endif
-
-                </div>
-
-            </div>
-
-
-            {{-- ================================================= --}}
-            {{-- HERO IMAGE --}}
-            {{-- ================================================= --}}
-
-            @if($news->featured_image)
-
-                <figure class="mt-9">
-
-                    <div class="relative
-                                overflow-hidden
-                                bg-gray-200
-                                shadow-lg">
-
-                        <img
-                            src="{{ asset('storage/' . $news->featured_image) }}"
-                            alt="{{ $news->title }}"
-                            class="w-full
-                                   aspect-[16/9]
-                                   object-cover">
-
-                        <div class="absolute
-                                    left-0
-                                    bottom-0
-                                    w-full
-                                    h-24
-                                    bg-gradient-to-t
-                                    from-black/30
-                                    to-transparent">
-                        </div>
-
-                    </div>
-
-                    <figcaption class="mt-2
-                                        text-[9px]
-                                        uppercase
-                                        tracking-widest
-                                        text-gray-400">
-
-                        {{ $website->name }} • Special Report
-                </figcaption>
-
-                </figure>
-
-            @endif
-
-
-            {{-- ================================================= --}}
-            {{-- SHARE BAR --}}
-            {{-- ================================================= --}}
-
-            <div class="mt-7
-                        flex flex-wrap
-                        items-center
-                        gap-2">
-
-                <span class="mr-2
-                             text-[9px]
-                             uppercase
-                             tracking-[0.2em]
-                             font-black
-                             text-gray-500">
-
-                    Share Story
-
-                </span>
-
-
-                <button
-                    type="button"
-                    onclick="copyArticleLink()"
-                    class="px-4 py-2
-                           border border-[#c8c0b5]
-                           bg-[#f8f5ef]
-                           text-[9px]
-                           uppercase
-                           tracking-widest
-                           font-bold
-                           hover:bg-[#171717]
-                           hover:text-white
-                           transition">
-
-                    Copy Link
-
-                </button>
-
-
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->fullUrl()) }}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="px-4 py-2
-                          bg-[#171717]
+                <a href="{{ frontend_home_url() }}"
+                   class="inline-flex
+                          items-center
+                          gap-3
+                          bg-black
                           text-white
-                          text-[9px]
+                          rounded-full
+                          px-6
+                          py-3
+                          text-[10px]
                           uppercase
                           tracking-widest
                           font-bold
-                          hover:bg-[#a71930]
+                          hover:bg-gray-800
                           transition">
 
-                    Facebook
+                    <span>
+                        ←
+                    </span>
+
+                    Back to Home
 
                 </a>
 
 
-                <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->fullUrl()) }}&text={{ urlencode($news->title) }}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="px-4 py-2
-                          bg-[#171717]
-                          text-white
-                          text-[9px]
-                          uppercase
-                          tracking-widest
-                          font-bold
-                          hover:bg-[#a71930]
-                          transition">
+                @if($news->category)
 
-                    X
+                    <a href="{{ frontend_category_url($news->category->slug) }}"
+                       class="text-[10px]
+                              uppercase
+                              tracking-widest
+                              font-bold
+                              text-gray-400
+                              hover:text-black
+                              transition">
 
-                </a>
+                        More from {{ $categoryName }}
 
-            </div>
-
-
-            {{-- ================================================= --}}
-            {{-- ARTICLE BODY --}}
-            {{-- ================================================= --}}
-
-            <div class="mt-10
-                        font-serif
-                        text-lg
-                        sm:text-xl
-                        leading-[1.9]
-                        text-[#292524]">
-
-
-                @if($news->description)
-
-                    <div class="mb-7
-                                first-letter:text-5xl
-                                first-letter:font-bold
-                                first-letter:text-[#a71930]
-                                first-letter:mr-1">
-
-                        {!! $news->description !!}
-
-                    </div>
-
-                @endif
-
-
-                @if(isset($news->content) && $news->content)
-
-                    <div class="prose
-                                prose-lg
-                                max-w-none
-                                prose-headings:font-serif
-                                prose-headings:font-black
-                                prose-headings:text-[#171717]
-                                prose-p:leading-8
-                                prose-p:text-[#292524]
-                                prose-a:text-[#a71930]
-                                prose-strong:text-[#171717]">
-
-                        {!! $news->content !!}
-
-                    </div>
+                    </a>
 
                 @endif
 
             </div>
-                  {{-- ================================================= --}}
-            {{-- ARTICLE END --}}
-            {{-- ================================================= --}}
-
-            <div class="mt-12
-                        pt-6
-                        border-t
-                        border-[#d5cec3]
-                        flex items-center
-                        justify-between">
-
-                <span class="text-[9px]
-                             uppercase
-                             tracking-[0.2em]
-                             font-black
-                             text-gray-400">
-
-                    End of Story
-
-                </span>
-
-                <span class="text-[#a71930]
-                             font-serif
-                             text-xl">
-
-                    ◆
-
-                </span>
-
-            </div>
-
 
         </article>
 
 
-        {{-- ================================================= --}}
-        {{-- CLASSIC SIDEBAR --}}
-        {{-- ================================================= --}}
+        {{-- ====================================================
+             SIDEBAR
+        ===================================================== --}}
 
         <aside class="lg:col-span-4">
 
-            <div class="lg:sticky
-                        lg:top-28
-                        space-y-7">
 
-
-                {{-- LATEST STORIES --}}
-
-                <section class="bg-[#f8f5ef]
-                                border
-                                border-[#d5cec3]
-                                shadow-sm">
-
-
-                    <div class="px-5 py-5
-                                border-b
-                                border-[#d5cec3]
-                                flex items-center
-                                gap-3">
-
-                        <span class="w-1.5 h-7
-                                     bg-[#a71930]">
-                        </span>
-
-                        <div>
-
-                            <div class="text-[9px]
-                                        uppercase
-                                        tracking-[0.2em]
-                                        font-black
-                                        text-[#a71930]">
-
-                                News Desk
-
-                            </div>
-
-                            <h2 class="font-serif
-                                       text-2xl
-                                       font-black">
-
-                                Latest Stories
-
-                            </h2>
-
-                        </div>
-
-                    </div>
-
-
-                    @php
-
-                        $sidebarNews = \App\Models\News::with('category')
-                            ->where('website_id', $website->id)
-                            ->where('status', 'published')
-                            ->where('id', '!=', $news->id)
-                            ->where(function ($query) {
-
-                                $query->whereNull('published_at')
-                                      ->orWhere('published_at', '<=', now());
-
-                            })
-                            ->latest('published_at')
-                            ->take(6)
-                            ->get();
-
-                    @endphp
-
-
-                    <div class="divide-y
-                                divide-[#ddd6ca]">
-
-
-                        @forelse($sidebarNews as $index => $item)
-
-                            <a href="{{ route('frontend.news', [
-                                    'websiteSlug' => $website->slug,
-                                    'newsSlug' => $item->slug
-                                ]) }}"
-                               class="block p-5
-                                      group
-                                      hover:bg-[#ebe7df]
-                                      transition">
-
-
-                                <div class="flex gap-4">
-
-
-                                    <div class="flex-shrink-0">
-                             <span class="font-serif
-                                                     text-3xl
-                                                     font-black
-                                                     text-[#d2cbc0]
-                                                     group-hover:text-[#a71930]
-                                                     transition">
-
-                                            {{ str_pad(
-                                                $index + 1,
-                                                2,
-                                                '0',
-                                                STR_PAD_LEFT
-                                            ) }}
-
-                                        </span>
-
-                                    </div>
-
-
-                                    <div class="min-w-0">
-
-
-                                        <div class="text-[9px]
-                                                    uppercase
-                                                    tracking-widest
-                                                    font-black
-                                                    text-[#a71930]
-                                                    mb-1">
-
-                                            {{ $item->category->name ?? 'News' }}
-
-                                        </div>
-
-
-                                        <h3 class="font-serif
-                                                   text-base
-                                                   font-bold
-                                                   leading-snug
-                                                   text-[#292524]
-                                                   group-hover:text-[#a71930]
-                                                   transition">
-
-                                            {{ $item->title }}
-
-                                        </h3>
-
-
-                                        <div class="mt-2
-                                                    text-[9px]
-                                                    uppercase
-                                                    tracking-widest
-                                                    text-gray-400">
-
-                                            {{ optional($item->published_at)->diffForHumans() }}
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </a>
-
-                        @empty
-
-                            <div class="p-6
-                                        text-sm
-                                        text-gray-500">
-
-                                No latest stories available.
-
-                            </div>
-
-                        @endforelse
-
-                    </div>
-
-                </section>
-
-
-                {{-- CLASSIC NEWSLETTER --}}
-
-                <section class="relative
-                                overflow-hidden
-                                bg-[#171717]
-                                text-white
-                                p-7">
-
-
-                    <div class="absolute
-                                -right-10
-                                -top-10
-                                w-32 h-32
-                                rounded-full
-                                border-[18px]
-                                border-[#a71930]/20">
-                    </div>
-
-
-                    <div class="relative">
-
+            {{-- LATEST STORIES --}}
+
+            <section class="soft-card
+                            p-6
+                            lg:sticky
+                            lg:top-8">
+
+                <div class="flex
+                            items-center
+                            justify-between
+                            border-b
+                            border-gray-100
+                            pb-4
+                            mb-2">
+
+                    <div>
 
                         <div class="text-[9px]
                                     uppercase
-                                    tracking-[0.25em]
-                                    font-black
-                                    text-[#d9a3aa]">
+                                    tracking-[.2em]
+                                    text-gray-400">
 
-                            The Daily Brief
+                            Latest
 
                         </div>
-                     <h2 class="font-serif
-                                   text-3xl
-                                   font-black
-                                   leading-tight
-                                   mt-3">
 
-                            News that
-                            matters.
+
+                        <h2 class="text-xl
+                                   font-black">
+
+                            Latest Stories
 
                         </h2>
 
+                    </div>
+
+
+                    <span class="text-xl">
+
+                        ✦
+
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    @forelse($latestNews as $index => $item)
+
+                        <a href="{{ frontend_news_url($item->slug) }}"
+                           class="flex
+                                  gap-4
+                                  py-5
+                                  border-b
+                                  border-gray-100
+                                  last:border-0
+                                  group">
+
+
+                            {{-- IMAGE --}}
+
+                            <div class="w-20
+                                        h-16
+                                        shrink-0
+                                        rounded-xl
+                                        overflow-hidden
+                                        bg-gray-100">
+
+                                @if(!empty($item->image))
+
+                                    <img src="{{ asset('storage/' . $item->image) }}"
+                                         alt="{{ $item->title }}"
+                                         class="story-image
+                                                w-full
+                                                h-full
+                                                object-cover">
+
+                                @else
+
+                                    <div class="w-full
+                                                h-full
+                                                flex
+                                                items-center
+                                                justify-center
+                                                text-gray-400
+                                                text-sm
+                                                font-bold">
+
+                                        {{ $index + 1 }}
+
+                                    </div>
+
+                                @endif
+
+                            </div>
+
+
+                            {{-- TEXT --}}
+
+                            <div class="flex-1 min-w-0">
+
+                                <div class="text-[8px]
+                                            uppercase
+                                            tracking-widest
+                                            text-gray-400
+                                            mb-1">
+
+                                    {{ $item->category->name ?? 'News' }}
+
+                                </div>
+
+
+                                <h3 class="text-sm
+                                           font-bold
+                                           leading-snug
+                                           group-hover:text-gray-500
+                                           transition">
+
+                                    {{ \Illuminate\Support\Str::limit(
+                                        $item->title,
+                                        70
+                                    ) }}
+
+                                </h3>
+
+
+                                @if($item->published_at)
+
+                                    <div class="text-[8px]
+                                                text-gray-400
+                                                mt-2">
+
+                                        {{ \Carbon\Carbon::parse(
+                                            $item->published_at
+                                        )->format('d M Y') }}
+
+                                    </div>
+
+                                @endif
+
+                            </div>
+
+                        </a>
+
+                    @empty
 
                         <p class="text-sm
                                   text-gray-400
-                                  leading-6
-                                  mt-3">
+                                  py-5">
 
-                            Stay informed with the
-                            latest headlines and
-                            important stories.
+                            No latest stories available.
 
                         </p>
 
+                    @endforelse
 
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            class="mt-5
-                                   w-full
-                                   px-4 py-3
+                </div>
+
+            </section>
+
+
+            {{-- CATEGORIES --}}
+
+            <section class="soft-card
+                            p-6
+                            mt-7">
+
+                <div class="text-[9px]
+                            uppercase
+                            tracking-[.2em]
+                            text-gray-400">
+
+                    Explore
+
+                </div>
+
+
+                <h2 class="text-xl
+                           font-black
+                           mt-1
+                           mb-5">
+
+                    Categories
+
+                </h2>
+
+
+                <div class="grid
+                            grid-cols-2
+                            gap-2">
+
+                    @forelse($categories->take(10) as $category)
+
+                        <a href="{{ frontend_category_url($category->slug) }}"
+                           class="bg-[#f7f7f4]
+                                  rounded-xl
+                                  px-3
+                                  py-3
+                                  text-[9px]
+                                  uppercase
+                                  tracking-wider
+                                  font-bold
+                                  text-gray-600
+                                  hover:bg-black
+                                  hover:text-white
+                                  transition">
+
+                            {{ $category->name }}
+
+                        </a>
+
+                    @empty
+
+                        <p class="col-span-2
+                                  text-sm
+                                  text-gray-400">
+
+                            No categories available.
+
+                        </p>
+
+                    @endforelse
+
+                </div>
+
+            </section>
+
+
+            {{-- NEWSLETTER --}}
+
+            <section class="mt-7
+                            bg-black
+                            text-white
+                            rounded-[22px]
+                            p-7">
+
+                <div class="text-[9px]
+                            uppercase
+                            tracking-[.25em]
+                            text-gray-500">
+
+                    Newsletter
+
+                </div>
+
+
+                <h2 class="text-2xl
+                           font-black
+                           leading-tight
+                           mt-3">
+
+                    Stories worth
+                    reading.
+
+                </h2>
+
+
+                <p class="text-sm
+                          text-gray-400
+                          leading-6
+                          mt-3">
+
+                    Get the latest stories
+                    directly in your inbox.
+
+                </p>
+
+
+                <form class="mt-5">
+
+                    <input type="email"
+                           placeholder="Your email"
+                           class="w-full
+                                  rounded-xl
+                                  bg-white
+                                  text-black
+                                  px-4
+                                  py-3
+                                  text-sm
+                                  outline-none">
+
+
+                    <button type="button"
+                            class="w-full
+                                   mt-2
                                    bg-white
-                                   text-gray-900
-                                   text-sm
-                                   outline-none">
-
-
-                        <button
-                            type="button"
-                            class="mt-2
-                                   w-full
-                                   bg-[#a71930]
+                                   text-black
+                                   rounded-xl
                                    py-3
-                                   text-white
-                                   text-[10px]
+                                   text-[9px]
                                    uppercase
                                    tracking-widest
                                    font-black
-                                   hover:bg-[#8d1428]
+                                   hover:bg-gray-200
                                    transition">
 
-                            Subscribe →
+                        Subscribe
 
-                        </button>
+                    </button>
 
+                </form>
 
-                    </div>
-
-                </section>
-
-
-            </div>
+            </section>
 
         </aside>
 
@@ -1061,114 +1125,76 @@
 </main>
 
 
-{{-- ========================================================= --}}
-{{-- FOOTER --}}
-{{-- ========================================================= --}}
+{{-- ============================================================
+     FOOTER
+============================================================ --}}
 
-<footer class="bg-[#111111]
-               text-gray-400
-               mt-12">
+<footer class="bg-white
+               border-t
+               border-gray-100
+               mt-10">
 
-
-    <div class="max-w-7xl mx-auto
-                px-4 sm:px-6 lg:px-8
+    <div class="container-main
+                px-5 lg:px-10
                 py-12">
 
-
         <div class="grid
-                    md:grid-cols-3
+                    md:grid-cols-4
                     gap-10">
 
 
-            <div>
+            {{-- BRAND --}}
 
-                <div class="flex items-center gap-3">
+            <div class="md:col-span-2">
 
-                    <div class="w-11 h-11
-                                bg-[#a71930]
-                                text-white
-                                flex items-center
-                                justify-center
-                                font-serif
-                                text-xl
-                                font-black">
+                <div class="text-2xl
+                            font-black">
 
-                        {{ strtoupper(substr($website->name, 0, 1)) }}
-
-                    </div>
-
-
-                    <div>
-
-                        <div class="font-serif
-                                    text-xl
-                                    font-black
-                                    text-white">
-
-                            {{ $website->name }}
-
-                        </div>
-
-                        <div class="text-[8px]
-                                    uppercase
-                                    tracking-[0.25em]
-                                    text-gray-600">
-
-                            News • Ideas • Perspective
-
-                        </div>
-
-                    </div>
+                    {{ $siteName }}
 
                 </div>
 
 
-                <p class="mt-5
-                          text-sm
-                          leading-7
-                          text-gray-500">
+                <p class="text-sm
+                          text-gray-500
+                          leading-6
+                          max-w-md
+                          mt-4">
 
                     Independent journalism,
-                    trusted reporting and
-                    stories that matter.
+                    latest news and stories
+                    that matter.
 
                 </p>
 
             </div>
 
 
+            {{-- CATEGORIES --}}
+
             <div>
 
-                <h3 class="text-white
-                           text-[10px]
+                <h3 class="text-[9px]
                            uppercase
-                           tracking-[0.2em]
+                           tracking-[.2em]
                            font-black
                            mb-5">
-                            Explore
+
+                    Explore
 
                 </h3>
 
 
-                <div class="space-y-3 text-sm">
+                <div class="grid
+                            grid-cols-2
+                            gap-3">
 
-                    <a href="{{ route('frontend.website', [
-                            'slug' => $website->slug
-                        ]) }}"
-                       class="block hover:text-white">
+                    @foreach($categories->take(8) as $category)
 
-                        Home
-
-                    </a>
-
-
-                    @foreach($categories->take(6) as $category)
-
-                        <a href="{{ route('frontend.category', [
-                                'websiteSlug' => $website->slug,
-                                'categorySlug' => $category->slug
-                            ]) }}"
-                           class="block hover:text-white">
+                        <a href="{{ frontend_category_url($category->slug) }}"
+                           class="text-xs
+                                  text-gray-500
+                                  hover:text-black">
 
                             {{ $category->name }}
 
@@ -1181,28 +1207,29 @@
             </div>
 
 
+            {{-- WEBSITE INFO --}}
+
             <div>
 
-                <h3 class="text-white
-                           text-[10px]
+                <h3 class="text-[9px]
                            uppercase
-                           tracking-[0.2em]
+                           tracking-[.2em]
                            font-black
                            mb-5">
 
-                    Publication
+                    About
 
                 </h3>
 
-                <p class="text-sm
-                          leading-7
-                          text-gray-500">
 
-                    {{ $website->name }}
+                <p class="text-xs
+                          text-gray-500
+                          leading-6">
 
-                    <br>
+                    {{ $siteName }}
 
-                    Digital News Publication
+                    brings you the latest
+                    news, stories and updates.
 
                 </p>
 
@@ -1211,28 +1238,33 @@
         </div>
 
 
+        {{-- FOOTER BOTTOM --}}
+
         <div class="border-t
-                    border-white/10
+                    border-gray-100
                     mt-10
                     pt-5
-                    flex flex-col
+                    flex
+                    flex-col
                     sm:flex-row
                     justify-between
-                    gap-3
-                    text-[10px]
-                    text-gray-600
-                    uppercase
-                    tracking-wider">
+                    gap-3">
 
-            <span>
+            <span class="text-[9px]
+                         uppercase
+                         tracking-widest
+                         text-gray-400">
 
                 © {{ date('Y') }}
-                {{ $website->name }}.
-                All Rights Reserved.
+                {{ $siteName }}
 
             </span>
 
-            <span>
+
+            <span class="text-[9px]
+                         uppercase
+                         tracking-widest
+                         text-gray-400">
 
                 Powered by NewsHub CMS
 
@@ -1243,27 +1275,6 @@
     </div>
 
 </footer>
-
-
-<script>
-
-function copyArticleLink() {
-
-    if (navigator.clipboard) {
-
-        navigator.clipboard.writeText(
-            window.location.href
-        ).then(function () {
-
-            alert('Article link copied!');
-
-        });
-
-    }
-
-}
-
-</script>
 
 
 </body>

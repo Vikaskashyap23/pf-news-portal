@@ -98,9 +98,7 @@
 
             {{-- BRAND --}}
 
-            <a href="{{ route('frontend.website', [
-                'slug' => $website->slug
-            ]) }}"
+            <a href="{{ frontend_home_url() }}"
                class="flex items-center gap-3
                       group">
 
@@ -157,9 +155,7 @@
 
             {{-- HOME BUTTON --}}
 
-            <a href="{{ route('frontend.website', [
-                  'slug' => $website->slug
-            ]) }}"
+            <a href="{{ frontend_home_url() }}"
                class="hidden sm:inline-flex
                       items-center gap-2
                       border border-gray-300
@@ -194,9 +190,7 @@
                     overflow-x-auto
                     whitespace-nowrap">
 
-            <a href="{{ route('frontend.website', [
-                'slug' => $website->slug
-            ]) }}"
+            <a href="{{ frontend_home_url() }}"
                class="py-4
                       text-xs
                       uppercase
@@ -211,10 +205,7 @@
 
             @foreach($website->categories ?? [] as $category)
 
-                <a href="{{ route('frontend.category', [
-                    'websiteSlug' => $website->slug,
-                    'categorySlug' => $category->slug
-                ]) }}"
+                <a href="{{ frontend_category_url($category->slug) }}"
                    class="py-4
                           text-xs
                           uppercase
@@ -256,9 +247,7 @@
                 text-xs
                 text-gray-500">
 
-        <a href="{{ route('frontend.website', [
-            'slug' => $website->slug
-        ]) }}"
+        <a href="{{ frontend_home_url() }}"
            class="hover:text-red-600">
 
             Home
@@ -469,9 +458,7 @@
                     </div>
 
 
-                    <a href="{{ route('frontend.website', [
-                        'slug' => $website->slug
-                    ]) }}"
+                    <a href="{{ frontend_home_url() }}"
                        class="inline-flex
                               items-center
                               justify-center
@@ -629,10 +616,7 @@
                                         </div>
 
 
-                                        <a href="{{ route('frontend.news', [
-                                            'websiteSlug' => $website->slug,
-                                            'newsSlug' => $item->slug
-                                        ]) }}">
+                                        <a href="{{ frontend_news_url($item->slug) }}">
 
                                             <h3 class="font-serif
                                                        text-lg
@@ -725,9 +709,7 @@
                         newsroom.
 
                     </p>
-                       <a href="{{ route('frontend.website', [
-                        'slug' => $website->slug
-                    ]) }}"
+                       <a href="{{ frontend_home_url() }}"
                        class="inline-flex
                               mt-5
                               items-center

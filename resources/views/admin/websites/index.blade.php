@@ -73,30 +73,35 @@
                             @endif
 
                         </td>
+<td>
+    <div class="d-flex align-items-center flex-nowrap" style="gap: 6px;">
 
-                        <td>
+        <a href="{{ route('websites.edit', $website->id) }}"
+           class="btn btn-sm btn-warning">
+            Edit
+        </a>
 
-                            <a href="{{ route('websites.edit', $website->id) }}" class="btn btn-sm btn-warning">
-                                Edit
-                            </a>
+        <a href="{{ route('admin.websites.domains.index', $website->id) }}"
+           class="btn btn-sm btn-primary">
+            <i class="fas fa-globe"></i>
+            Domains
+        </a>
 
-                            <form action="{{ route('websites.destroy' , $website->id) }}" method="POST" style="display:inline;">
+        <form action="{{ route('websites.destroy', $website->id) }}"
+              method="POST"
+              class="m-0">
+            @csrf
+            @method('DELETE')
 
-                            @csrf
-                            @method('DELETE')
-                            
-                            <button type="submit" class="btn btn-sm btn-danger"
+            <button type="submit"
+                    class="btn btn-sm btn-danger"
+                    onclick="return confirm('Are you sure you want to delete this website?')">
+                Delete
+            </button>
+        </form>
 
-                            onclick="return confirm('Are you sure you want to delete this website?')">
-                            
-                            
-                            Delete
-
-                            </button>
-                            
-                            </form>
-
-                        </td>
+    </div>
+</td>
 
                     </tr>
 

@@ -59,15 +59,29 @@
             <div class="mb-3">
                 <label>Role</label>
 
-                <select name="role" class="form-control">
+                <select name="role" class="form-control" required>
 
-                    <option value="admin">
-                        Admin
+                  @if (auth()->user()->role === 'super_admin')
+
+                    <option value="super_admin">
+                        Super Admin
                     </option>
+
+                  <option value = "admin">
+                    Admin
+                 </option>
 
                     <option value="editor" selected>
                         Editor
                     </option>
+
+                    @elseif(auth()->user()->role === 'admin')
+
+                    <option value="editor" selected>
+                        Editor
+                    </option>
+
+                    @endif
 
                 </select>
 

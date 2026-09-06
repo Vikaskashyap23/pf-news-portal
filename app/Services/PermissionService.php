@@ -31,7 +31,7 @@ class PermissionService
         | Admin can access everything in the CMS.
         |
         */
-        if ($user->role === 'admin') {
+        if (in_array($user->role , ['super_admin','admin'])) {
             return true;
         }
 

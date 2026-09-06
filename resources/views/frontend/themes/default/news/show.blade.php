@@ -57,7 +57,7 @@
 
         <div class="h-20 flex items-center justify-between">
 
-            <a href="{{ route('frontend.website', ['slug' => $website->slug]) }}"
+            <a href="{{ frontend_home_url() }}"
                class="flex items-center gap-3">
 
                 <div class="w-11 h-11
@@ -110,9 +110,7 @@
                         overflow-x-auto
                         whitespace-nowrap">
 
-                <a href="{{ route('frontend.website', [
-                    'slug' => $website->slug
-                ]) }}"
+                <a href="{{ frontend_home_url() }}"
                    class="relative py-4
                           text-xs font-black uppercase
                           tracking-wide
@@ -129,10 +127,7 @@
 
                 @foreach($website->categories ?? [] as $category)
 
-                    <a href="{{ route('frontend.category', [
-                        'websiteSlug' => $website->slug,
-                        'categorySlug' => $category->slug
-                    ]) }}"
+                    <a href="{{ frontend_category_url($category->slug) }}"
                        class="py-4
                               text-xs font-bold uppercase
                               tracking-wide
@@ -180,9 +175,7 @@
                         text-gray-500
                         mb-6">
 
-                <a href="{{ route('frontend.website', [
-                    'slug' => $website->slug
-                ]) }}"
+                <a href="{{ frontend_home_url() }}"
                    class="hover:text-red-600">
 
                     Home
@@ -374,9 +367,7 @@
                         border-y border-gray-200
                         py-5">
 
-                <a href="{{ route('frontend.website', [
-                    'slug' => $website->slug
-                ]) }}"
+                <a href="{{ frontend_home_url() }}"
                    class="inline-flex
                           items-center gap-2
                           px-5 py-3

@@ -22,10 +22,12 @@ class HomeController extends Controller
         | Website-specific pages /site/{slug} se open hongi.
         |--------------------------------------------------------------------------
         */
-
-        $website = Website::where('status', true)
-            ->orderBy('id')
-            ->firstOrFail();
+        $website = app()->bound('currentWebsite')
+        
+        ? app('currentWebsite')
+        : Website::where('status', true)
+        ->orderBy('id')
+        ->firstOrFail();
 
         /*
         |--------------------------------------------------------------------------
@@ -90,13 +92,14 @@ class HomeController extends Controller
             ->latest()
             ->get();
 
-        return view('frontend.home', compact(
-            'setting',
-            'website',
-            'breakingNews',
-            'featuredNews',
-            'latestNews',
-            'categories'
-        ));
-    }
+$themePath = $website->selectedTheme?->theme_path ?? 'default';
+
+return view('frontend.themes.' . $themePath . '.home', compact(
+    'setting',
+    'website',
+    'breakingNews',
+    'featuredNews',
+    'latestNews',
+    'categories'
+));    }
 }

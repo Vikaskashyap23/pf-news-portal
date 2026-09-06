@@ -81,9 +81,7 @@
 
             {{-- LOGO + SITE NAME --}}
 
-            <a href="{{ route('frontend.website', [
-                'slug' => $website->slug
-            ]) }}"
+            <a href="{{ frontend_home_url() }}"
                class="flex items-center gap-4">
 
                 <div class="w-12 h-12 bg-red-600 text-white
@@ -150,9 +148,7 @@
                         hide-scrollbar">
 
 
-                <a href="{{ route('frontend.website', [
-                    'slug' => $website->slug
-                ]) }}"
+                <a href="{{ frontend_home_url() }}"
                    class="py-4
                           text-sm
                           font-bold
@@ -166,10 +162,7 @@
 
 
                 @foreach($categories as $category)
-                      <a href="{{ route('frontend.category', [
-                        'websiteSlug' => $website->slug,
-                        'categorySlug' => $category->slug
-                    ]) }}"
+                      <a href="{{ frontend_category_url($category->slug) }}"
                        class="py-4
                               text-sm
                               font-semibold
@@ -227,10 +220,7 @@
 
                 @foreach($breakingNews as $breaking)
 
-                    <a href="{{ route('frontend.news', [
-                        'websiteSlug' => $website->slug,
-                        'newsSlug' => $breaking->slug
-                    ]) }}"
+                    <a href="{{ frontend_news_url($breaking->slug) }}"
                        class="text-sm
                               font-semibold
                               py-3
@@ -331,10 +321,7 @@
 
                 @if($hero->featured_image)
 
-                    <a href="{{ route('frontend.news', [
-                        'websiteSlug' => $website->slug,
-                        'newsSlug' => $hero->slug
-                    ]) }}">
+                    <a href="{{ frontend_news_url($hero->slug) }}">
 
                         <div class="relative h-72 sm:h-96 overflow-hidden">
                              <img
@@ -453,10 +440,7 @@
                                 </div>
 
 
-                                <a href="{{ route('frontend.news', [
-                                    'websiteSlug' => $website->slug,
-                                    'newsSlug' => $item->slug
-                                ]) }}">
+                                <a href="{{ frontend_news_url($item->slug) }}">
                                     <h3 class="headline-font
                                                font-bold
                                                text-lg
@@ -551,10 +535,7 @@
 
                     @if($item->featured_image)
 
-                        <a href="{{ route('frontend.news', [
-                            'websiteSlug' => $website->slug,
-                            'newsSlug' => $item->slug
-                        ]) }}"
+                        <a href="{{ frontend_news_url($item->slug) }}"
                            class="sm:w-48
                                   h-40
                                   flex-shrink-0
@@ -601,10 +582,7 @@
                         </div>
 
 
-                        <a href="{{ route('frontend.news', [
-                            'websiteSlug' => $website->slug,
-                            'newsSlug' => $item->slug
-                        ]) }}">
+                        <a href="{{ frontend_news_url($item->slug) }}">
                             <h3 class="headline-font
                                        text-xl
                                        font-bold
@@ -633,10 +611,7 @@
 
                         <div class="mt-3">
 
-                            <a href="{{ route('frontend.news', [
-                                'websiteSlug' => $website->slug,
-                                'newsSlug' => $item->slug
-                            ]) }}"
+                            <a href="{{ frontend_news_url($item->slug) }}"
                                class="text-xs
                                       font-bold
                                       text-red-600
@@ -727,10 +702,7 @@
 
         @foreach($latestNews->take(5) as $index => $item)
 
-            <a href="{{ route('frontend.news', [
-                'websiteSlug' => $website->slug,
-                'newsSlug' => $item->slug
-            ]) }}"
+            <a href="{{ frontend_news_url($item->slug) }}"
                class="block
                       p-4
                       border-b
@@ -811,10 +783,7 @@
 
         @foreach($categories as $category)
 
-            <a href="{{ route('frontend.category', [
-                'websiteSlug' => $website->slug,
-                'categorySlug' => $category->slug
-            ]) }}"
+            <a href="{{ frontend_category_url($category->slug) }}"
                class="text-sm
                       text-gray-600
                       hover:text-red-600
@@ -887,10 +856,7 @@
 
                     @foreach($categories->take(6) as $category)
 
-                        <a href="{{ route('frontend.category', [
-                            'websiteSlug' => $website->slug,
-                            'categorySlug' => $category->slug
-                        ]) }}"
+                        <a href="{{ frontend_category_url($category->slug) }}"
                            class="block
                                   text-sm
                                   hover:text-white">
@@ -1001,9 +967,7 @@
 
 
         <form
-            action="{{ route('frontend.search', [
-                'slug' => $website->slug
-            ]) }}"
+            action="{{ frontend_search_url() }}"
             method="GET"
             class="flex gap-2">
 

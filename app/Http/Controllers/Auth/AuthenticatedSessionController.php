@@ -40,7 +40,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        if ($user->role === 'admin'){
+        if (in_array($user->role, ['super_admin' , 'admin'])) {
 
             return redirect('/admin');
         }

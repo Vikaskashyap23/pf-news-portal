@@ -1,15 +1,18 @@
+
 import './bootstrap';
 
-import { 
-
+import {
     ClassicEditor,
     Essentials,
     Paragraph,
     Bold,
-    Italic
+    Italic,
+    Heading,
+    Link,
+    List,
+    BlockQuote,
+    Table
 } from 'ckeditor5';
-
-console.log(classicEditor);
 
 import 'ckeditor5/ckeditor5.css';
 
@@ -25,7 +28,13 @@ window.CKEditorPlugins = {
     Essentials,
     Paragraph,
     Bold,
-    Italic
+    Italic,
+    Heading,
+    Link,
+    List,
+    BlockQuote,
+    Table
 };
 
-console.log("App js loaded");
+console.log('App js loaded');
+

@@ -364,6 +364,13 @@ return [
         'can' => 'users.view',
     ],
 
+
+    [
+    'text' => 'Payments',
+    'url' => 'payments',
+    'icon' => 'fas fa-credit-card',
+    ],
+
     ['header' => 'SETTINGS'],
 
     [

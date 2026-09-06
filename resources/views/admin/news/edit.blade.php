@@ -1,187 +1,587 @@
 @extends('adminlte::page')
 
-@section('title', 'Add News')
+@section('title', 'Edit News')
 
 @section('content_header')
-    <h1>Add News</h1>
+    <div class="d-flex justify-content-between align-items-center">
+
+        <h1>Edit News</h1>
+
+        <a href="{{ route('news.index') }}"
+           class="btn btn-secondary">
+
+            Back
+
+        </a>
+
+    </div>
 @stop
+
 
 @section('content')
 
-<form action="{{ route('news.update', $news->id) }}" method="POST" enctype="multipart/form-data">
+@if ($errors->any())
+
+    <div class="alert alert-danger">
+
+        <strong>Please fix the following errors:</strong>
+
+        <ul class="mb-0 mt-2">
+
+            @foreach ($errors->all() as $error)
+
+                <li>{{ $error }}</li>
+
+            @endforeach
+
+        </ul>
+
+    </div>
+
+@endif
+
+
+<form action="{{ route('news.update', $news->id) }}"
+      method="POST"
+      enctype="multipart/form-data">
 
     @csrf
 
     @method('PUT')
 
+
     <div class="card">
-        <div class="card-body">
 
-            <div class="form-group mb-3">
-                <label>Website</label>
+        <div class="card-header">
 
-                <select name="website_id" class="form-control">
-                    @foreach($websites as $website)
-                        <option value="{{ $website->id }}">
-                            {{ $news->website_id == $website->id ? 'selected': '' }}
-                            {{ $website->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group mb-3">
-                <label>Category</label>
-
-                <select name="category_id" class="form-control">
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}">
-                            {{ $news->category_id == $category->id ? 'selected' : ''}}
-                            {{ $category->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group mb-3">
-
-               <label> Language </label>
-
-            <select name="language_id" class="form-control">
-                 
-                 @foreach($languages as $language)
-
-                     <option value="{{ $language->id }}">
-                     {{ $news->language_id == $language->id ? 'selected' : ''}}
-                    {{ $language->name }}
-                </option>
-                @endforeach
-            </select>
-
-            </div>
-
-             <div class="form-group mb-3">
-
-                <label> Theme </label>
-
-                <select name="theme_id" class="form-control">
-                    @foreach($themes as $theme)
-                    <option value="{{ $theme->id }}">
-                        {{ $news->theme_id == $theme->id ? 'selected' : ''}}
-                        {{ $theme->name }}
-
-                    </option>
-
-                    @endforeach
-
-                </select>
-                
-            </div>
-
-
-
-             @if($news->featured_image)
-               <div class="mb-3">
-                <label> Current Image </label><br>
-
-                <img src="{{ asset('storage/' . $news->featured_image) }} "
-                    width="120"
-                    style="border-redius:8px; border:1px solid #add;">
-               </div>
-
-               @endif
-
-               <div class="mb-3">
-
-               <label> Change Image </label>
-
-               <input type="file"
-                      name="featured_image"
-                      class="form-control">
-               </div>
-
-            <div class="form-group mb-3">
-                <label>Title</label>
-                <input type="text" name="title" class="form-control" value="{{ $news->title }}">
-            </div>
-
-            <div class="form-group mb-3">
-                <label>Slug</label>
-                <input type="text" name="slug" class="form-control" value="{{ $news->slug }}">
-            </div>
-
-            <div class="form-group mb-3">
-                <label>Meta Title</label>
-                <input type="text" name="meta_title" class="form-control" value="{{ $news->meta_title }}">
-            </div>
-
-            <div class="form-group mb-3">
-                <label>Meta Description</label>
-                <textarea name="meta_description" class="form-control"> {{ $news->meta_description }}</textarea>
-            </div>
-
-            <div class="form-group mb-3">
-                <label>Description</label>
-                <textarea name="description" rows="6" class="form-control"> {{ $news->description }} </textarea>
-            </div>
-
-            <div class="form-group mb-3">
-                <label> Meta Keywords </label>
-                <input type="text" name="meta_keywords" class="form-control" value="{{ $news->meta_keywords }}">
-            </div>
-
-
-            
-                 <div class="form-group mb-3">
-                    <label> Status </label>
-        
-                    <select name="status" class="form-control">
-                        <option value="draft"
-                        {{ $news->status == 'draft' ? 'selected' : ''}}>
-                        Draft
-                    </option>
-        
-                    <option value="published"
-                        {{ $news->status == 'published' ? 'selected' : ''}}>
-                        Published
-                        </option>
-                    </select>
-                 </div>
-
-
-
-            
-            <div class="form-group mb-3">
-                <label>
-                    <input type="checkbox"
-                    name="is_breaking"
-                    value="1"
-                    {{ $news->is_breaking ? 'checked' : ''}}>
-
-                    Breaking News
-
-                </label>
-
-            </div>
-
-            <div class="form-group mb-3">
-                <label>
-                    <input type="checkbox"
-                            name="is_featured"
-                            value="1"
-                            {{ $news->is_featured ? 'checked' : ''}}>
-
-                        Featured News    
-                </label>
-            </div>
-            
-            <button class="btn btn-primary">
-                Update News
-            </button>
+            <h3 class="card-title">
+                Edit News
+            </h3>
 
         </div>
-        
+
+
+        <div class="card-body">
+
+
+            {{-- Website --}}
+            <div class="form-group mb-3">
+
+                <label for="website_id">
+                    Website
+                </label>
+
+                <select name="website_id"
+                        id="website_id"
+                        class="form-control">
+
+                    @foreach($websites as $website)
+
+                        <option value="{{ $website->id }}"
+                            {{ $news->website_id == $website->id ? 'selected' : '' }}>
+
+                            {{ $website->name }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+
+            {{-- Category --}}
+            <div class="form-group mb-3">
+
+                <label for="category_id">
+                    Category
+                </label>
+
+                <select name="category_id"
+                        id="category_id"
+                        class="form-control">
+
+                    @foreach($categories as $category)
+
+                        <option value="{{ $category->id }}"
+                            {{ $news->category_id == $category->id ? 'selected' : '' }}>
+
+                            {{ $category->name }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+
+            {{-- Language --}}
+            <div class="form-group mb-3">
+
+                <label for="language_id">
+                    Language
+                </label>
+
+                <select name="language_id"
+                        id="language_id"
+                        class="form-control">
+
+                    @foreach($languages as $language)
+
+                        <option value="{{ $language->id }}"
+                            {{ $news->language_id == $language->id ? 'selected' : '' }}>
+
+                            {{ $language->name }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+
+            {{-- Theme --}}
+            <div class="form-group mb-3">
+
+                <label for="theme_id">
+                    Theme
+                </label>
+
+                <select name="theme_id"
+                        id="theme_id"
+                        class="form-control">
+
+                    @foreach($themes as $theme)
+
+                        <option value="{{ $theme->id }}"
+                            {{ $news->theme_id == $theme->id ? 'selected' : '' }}>
+
+                            {{ $theme->name }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+
+            {{-- Current Image --}}
+            @if($news->featured_image)
+
+                <div class="form-group mb-3">
+
+                    <label>
+                        Current Image
+                    </label>
+
+                    <div class="mb-2">
+
+                        <img src="{{ asset('storage/' . $news->featured_image) }}"
+                             width="160"
+                             height="100"
+                             style="object-fit: cover;
+                                    border-radius: 8px;
+                                    border: 1px solid #ddd;"
+                             alt="{{ $news->title }}">
+
+                    </div>
+
+                </div>
+
+            @endif
+
+
+            {{-- Change Image --}}
+            <div class="form-group mb-3">
+
+                <label for="featured_image">
+                    Change Image
+                </label>
+
+                <input type="file"
+                       name="featured_image"
+                       id="featured_image"
+                       class="form-control"
+                       accept="image/*">
+
+            </div>
+
+
+            {{-- Title --}}
+            <div class="form-group mb-3">
+
+                <label for="title">
+                    Title
+                </label>
+
+                <input type="text"
+                       name="title"
+                       id="title"
+                       class="form-control"
+                       value="{{ old('title', $news->title) }}"
+                       placeholder="Enter news title">
+
+            </div>
+
+
+            {{-- Slug --}}
+            <div class="form-group mb-3">
+
+                <label for="slug">
+                    Slug
+                </label>
+
+                <input type="text"
+                       name="slug"
+                       id="slug"
+                       class="form-control"
+                       value="{{ old('slug', $news->slug) }}">
+
+            </div>
+
+
+            {{-- Meta Title --}}
+            <div class="form-group mb-3">
+
+                <label for="meta_title">
+                    Meta Title
+                </label>
+
+                <input type="text"
+                       name="meta_title"
+                       id="meta_title"
+                       class="form-control"
+                       value="{{ old('meta_title', $news->meta_title) }}"
+                       placeholder="Enter meta title">
+
+            </div>
+
+
+            {{-- Meta Description --}}
+            <div class="form-group mb-3">
+
+                <label for="meta_description">
+                    Meta Description
+                </label>
+
+                <textarea name="meta_description"
+                          id="meta_description"
+                          rows="4"
+                          class="form-control"
+                          placeholder="Enter meta description">{{ old('meta_description', $news->meta_description) }}</textarea>
+
+            </div>
+
+
+            {{-- Description / CKEditor --}}
+            <div class="form-group mb-3">
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea name="description"
+                          id="description"
+                          rows="10"
+                          class="form-control">{{ old('description', $news->description) }}</textarea>
+
+            </div>
+
+
+            {{-- Meta Keywords --}}
+            <div class="form-group mb-3">
+
+                <label for="meta_keywords">
+                    Meta Keywords
+                </label>
+
+                <input type="text"
+                       name="meta_keywords"
+                       id="meta_keywords"
+                       class="form-control"
+                       value="{{ old('meta_keywords', $news->meta_keywords) }}"
+                       placeholder="news, india, politics">
+
+            </div>
+
+
+            {{-- Status --}}
+            <div class="form-group mb-3">
+
+                <label for="status">
+                    Status
+                </label>
+
+                <select name="status"
+                        id="status"
+                        class="form-control">
+
+                    <option value="draft"
+                        {{ old('status', $news->status) == 'draft' ? 'selected' : '' }}>
+
+                        Draft
+
+                    </option>
+
+                    <option value="published"
+                        {{ old('status', $news->status) == 'published' ? 'selected' : '' }}>
+
+                        Published
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            {{-- Breaking News --}}
+            <div class="form-group mb-3">
+
+                <div class="form-check">
+
+                    <input type="checkbox"
+                           name="is_breaking"
+                           id="is_breaking"
+                           value="1"
+                           class="form-check-input"
+                           {{ old('is_breaking', $news->is_breaking) ? 'checked' : '' }}>
+
+                    <label for="is_breaking"
+                           class="form-check-label">
+
+                        Breaking News
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            {{-- Featured News --}}
+            <div class="form-group mb-3">
+
+                <div class="form-check">
+
+                    <input type="checkbox"
+                           name="is_featured"
+                           id="is_featured"
+                           value="1"
+                           class="form-check-input"
+                           {{ old('is_featured', $news->is_featured) ? 'checked' : '' }}>
+
+                    <label for="is_featured"
+                           class="form-check-label">
+
+                        Featured News
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            {{-- Publish Date --}}
+            <div class="form-group mb-3">
+
+                <label for="published_at">
+                    Publish Date & Time
+                </label>
+
+                <input type="datetime-local"
+                       name="published_at"
+                       id="published_at"
+                       class="form-control"
+                       value="{{ old('published_at', $news->published_at ? \Carbon\Carbon::parse($news->published_at)->format('Y-m-d\TH:i') : '') }}">
+
+            </div>
+
+
+        </div>
+
+
+        {{-- Card Footer --}}
+        <div class="card-footer">
+
+            <button type="submit"
+                    class="btn btn-primary">
+
+                <i class="fas fa-save"></i>
+                Update News
+
+            </button>
+
+            <a href="{{ route('news.index') }}"
+               class="btn btn-secondary">
+
+                Cancel
+
+            </a>
+
+        </div>
+
     </div>
+
 </form>
 
 @stop
+
+
+
+@section('js')
+
+@vite('resources/js/app.js')
+
+<style>
+
+    .ck-editor {
+        width: 100%;
+    }
+
+    .ck-editor__editable {
+        min-height: 300px !important;
+        cursor: text !important;
+        pointer-events: auto !important;
+        user-select: text !important;
+    }
+
+    .ck-editor__editable_inline {
+        min-height: 300px !important;
+    }
+
+</style>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | CKEditor
+    |--------------------------------------------------------------------------
+    */
+
+    const descriptionElement =
+        document.getElementById('description');
+
+
+    if (!descriptionElement) {
+
+        console.error('Description textarea not found.');
+
+        return;
+
+    }
+
+
+    if (typeof window.ClassicEditor === 'undefined') {
+
+        console.error('ClassicEditor not loaded.');
+
+        return;
+
+    }
+
+
+    const {
+        Essentials,
+        Paragraph,
+        Bold,
+        Italic,
+        Heading,
+        Link,
+        List,
+        BlockQuote,
+        Table
+    } = window.CKEditorPlugins;
+
+
+    window.ClassicEditor
+        .create(descriptionElement, {
+
+            licenseKey: 'GPL',
+
+            plugins: [
+
+                Essentials,
+                Paragraph,
+                Bold,
+                Italic,
+                Heading,
+                Link,
+                List,
+                BlockQuote,
+                Table
+
+            ],
+
+            toolbar: [
+
+                'undo',
+                'redo',
+
+                '|',
+
+                'heading',
+
+                '|',
+
+                'bold',
+                'italic',
+
+                '|',
+
+                'link',
+
+                '|',
+
+                'bulletedList',
+                'numberedList',
+
+                '|',
+
+                'blockQuote',
+                'insertTable'
+
+            ],
+
+            placeholder:
+                'Write your news description here...'
+
+        })
+
+        .then(editor => {
+
+            window.newsEditor = editor;
+
+            console.log(
+                'Edit News CKEditor loaded successfully.'
+            );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                'Edit News CKEditor Error:',
+                error
+            );
+
+        });
+
+});
+
+</script>
+
+@stop
+

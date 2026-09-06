@@ -8,29 +8,83 @@ use App\Models\News;
 
 class NewsController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Existing /site/{slug}/news/{newsSlug}
+    |--------------------------------------------------------------------------
+    */
+
     public function show(string $websiteSlug, string $newsSlug)
     {
-        // Find active website
         $website = Website::where('slug', $websiteSlug)
             ->where('status', true)
             ->firstOrFail();
 
-        // Find published news belonging to this website
+        return $this->loadNews($website, $newsSlug);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Domain Based News
+    |--------------------------------------------------------------------------
+    */
+
+    public function domainShow(string $newsSlug)
+    {
+        abort_unless(
+            app()->bound('currentWebsite'),
+            404
+        );
+
+        $website = app('currentWebsite');
+
+        abort_unless(
+            $website->status,
+            404
+        );
+
+        return $this->loadNews($website, $newsSlug);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Common News Loader
+    |--------------------------------------------------------------------------
+    */
+
+    private function loadNews(
+        Website $website,
+        string $newsSlug
+    ) {
         $news = News::with(['category', 'website'])
             ->where('website_id', $website->id)
             ->where('slug', $newsSlug)
             ->where('status', 'published')
             ->where(function ($query) {
                 $query->whereNull('published_at')
-                      ->orWhere('published_at', '<=', now());
+                    ->orWhere('published_at', '<=', now());
             })
             ->firstOrFail();
 
-            $theme = $website->theme ?? 'default';
 
-        return view('frontend.themes.'. $theme . '.news.show', compact(
-            'website',
-            'news'
-        ));
+        /*
+        |--------------------------------------------------------------------------
+        | Theme
+        |--------------------------------------------------------------------------
+        */
+
+        $themePath = $website->selectedTheme?->theme_path ?? 'default';
+
+
+        return view(
+            'frontend.themes.' . $themePath . '.news.show',
+            compact(
+                'website',
+                'news'
+            )
+        );
     }
 }
+

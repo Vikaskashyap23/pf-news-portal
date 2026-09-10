@@ -251,6 +251,23 @@
             </div>
 
 
+            <div class="form-group mb-3">
+    <label for="video">News Video</label>
+
+    <input
+        type="file"
+        name="video"
+        id="video"
+        class="form-control"
+        accept="video/mp4,video/webm,video/ogg,video/quicktime"
+    >
+
+    <small class="text-muted">
+        MP4, WebM, OGG or MOV. Maximum size: 50MB.
+    </small>
+</div>
+
+
             {{-- Meta Keywords --}}
             <div class="form-group mb-3">
 

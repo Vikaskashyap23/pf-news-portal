@@ -10,15 +10,17 @@ use App\Models\Setting;
 
 class WebsiteController extends Controller
 {
-    public function show(string $slug)
-    {
-        $website = Website::where('slug', $slug)
-            ->where('status', true)
-            ->firstOrFail();
+public function show(string $slug)
+{
+    $website = Website::where('slug', $slug)
+        ->where('status', true)
+        ->firstOrFail();
 
-        return $this->loadWebsiteHome($website);
-    }
+    // Make current website available to helpers
+    app()->instance('currentWebsite', $website);
 
+    return $this->loadWebsiteHome($website);
+}
     public function domainSearch()
     {
         abort_unless(
@@ -35,15 +37,16 @@ class WebsiteController extends Controller
 
         return $this->loadSearch($website);
     }
+public function search(string $slug)
+{
+    $website = Website::where('slug', $slug)
+        ->where('status', true)
+        ->firstOrFail();
 
-    public function search(string $slug)
-    {
-        $website = Website::where('slug', $slug)
-            ->where('status', true)
-            ->firstOrFail();
+    app()->instance('currentWebsite', $website);
 
-        return $this->loadSearch($website);
-    }
+    return $this->loadSearch($website);
+}
 
     private function loadWebsiteHome(Website $website)
     {

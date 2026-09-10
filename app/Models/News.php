@@ -18,6 +18,7 @@ class News extends Model
         'published_at',
         'is_featured',
         'status',
+        'video',
         'featured_image',
         'is_breaking',
         'language_id',

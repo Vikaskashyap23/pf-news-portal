@@ -29,23 +29,19 @@ class NewsController extends Controller
     | Domain Based News
     |--------------------------------------------------------------------------
     */
-
-    public function domainShow(string $newsSlug)
-    {
-        abort_unless(
-            app()->bound('currentWebsite'),
-            404
-        );
-
+public function domainShow(string $newsSlug)
+{
+    if (app()->bound('currentWebsite')) {
         $website = app('currentWebsite');
-
-        abort_unless(
-            $website->status,
-            404
-        );
-
-        return $this->loadNews($website, $newsSlug);
+    } else {
+        // Localhost par first active website use karo
+        $website = Website::where('status', true)
+            ->orderBy('id')
+            ->firstOrFail();
     }
+
+    return $this->loadNews($website, $newsSlug);
+}
 
 
     /*

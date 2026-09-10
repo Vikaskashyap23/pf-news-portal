@@ -32,10 +32,10 @@ class ThemePaymentController extends Controller
             return back()->with('error', 'Invalid theme price.');
         }
 
-        return view('frontend.themes.checkout', compact(
-            'website',
-            'theme'
-        ));
+        return view(
+            'frontend.themes.checkout',
+            compact('website', 'theme')
+        );
     }
 
     /**
@@ -65,64 +65,94 @@ class ThemePaymentController extends Controller
         }
 
         /*
-         * Check whether this email already belongs to
-         * an admin/staff account.
+         * Check existing account
          */
         $existingUser = User::where('email', $request->email)->first();
 
         if ($existingUser && $existingUser->role !== 'customer') {
             return back()
                 ->withInput($request->except('password'))
-                ->with('error', 'This email is already registered as an admin/staff account. Please use another email.');
+                ->with(
+                    'error',
+                    'This email is already registered as an admin/staff account. Please use another email.'
+                );
         }
 
         /*
-         * Store customer details temporarily in session.
-         * Password is stored encrypted in the session by Laravel's
-         * session mechanism and will be hashed when the customer
-         * account is created after successful payment.
+         * Hash password ONCE.
+         */
+        $hashedPassword = Hash::make($request->password);
+
+        /*
+         * Store customer details in session.
          */
         session([
             'theme_customer' => [
-
                 'customer_name' => $request->name,
                 'customer_email' => $request->email,
                 'customer_mobile' => $request->mobile,
-                'customer_password' => Hash::make($request->password),
+                'customer_password' => $hashedPassword,
             ],
         ]);
 
+        /*
+         * Razorpay API
+         */
         $api = new Api(
             config('services.razorpay.key'),
             config('services.razorpay.secret')
         );
 
+        /*
+         * Create Razorpay Order
+         */
         $razorpayOrder = $api->order->create([
             'receipt' => 'THEME-' . $theme->id . '-' . time(),
             'amount' => (int) round($amount * 100),
             'currency' => 'INR',
         ]);
 
+        /*
+         * Create local ThemeOrder
+         *
+         * IMPORTANT:
+         * Customer details are also saved in DB.
+         * This makes webhook processing reliable.
+         */
         $order = ThemeOrder::create([
             'user_id' => null,
             'website_id' => $website->id,
             'theme_id' => $theme->id,
+
             'amount' => $amount,
             'gateway' => 'razorpay',
+
             'razorpay_order_id' => $razorpayOrder['id'],
+            'razorpay_payment_id' => null,
+            'razorpay_signature' => null,
+
             'status' => 'pending',
+            'paid_at' => null,
+
+            'customer_name' => $request->name,
+            'customer_email' => $request->email,
+            'customer_mobile' => $request->mobile,
+            'customer_password' => $hashedPassword,
         ]);
 
-        return view('frontend.themes.checkout', compact(
-            'website',
-            'theme',
-            'order',
-            'razorpayOrder'
-        ));
+        return view(
+            'frontend.themes.checkout',
+            compact(
+                'website',
+                'theme',
+                'order',
+                'razorpayOrder'
+            )
+        );
     }
 
     /**
-     * Verify payment
+     * Verify successful Razorpay payment
      */
     public function success(Request $request)
     {
@@ -137,10 +167,19 @@ class ThemePaymentController extends Controller
             $request->razorpay_order_id
         )->firstOrFail();
 
+        /*
+         * Already paid
+         */
         if ($order->status === 'paid') {
             return redirect()
-                ->route('frontend.themes', $order->website->slug)
-                ->with('success', 'Theme is already activated.');
+                ->route(
+                    'frontend.themes',
+                    $order->website->slug
+                )
+                ->with(
+                    'success',
+                    'Theme is already activated.'
+                );
         }
 
         $api = new Api(
@@ -160,29 +199,58 @@ class ThemePaymentController extends Controller
             ]);
 
             /*
-             * Get customer details from session
+             * Get customer details from session.
              */
             $customerData = session('theme_customer');
 
-            if (!$customerData) {
-                throw new \Exception('Customer details not found.');
+            /*
+             * If session exists, use it.
+             * Otherwise use database values.
+             *
+             * This prevents payment failure if session is lost.
+             */
+            $customerName =
+                $customerData['customer_name']
+                ?? $order->customer_name;
+
+            $customerEmail =
+                $customerData['customer_email']
+                ?? $order->customer_email;
+
+            $customerMobile =
+                $customerData['customer_mobile']
+                ?? $order->customer_mobile;
+
+            $customerPassword =
+                $customerData['customer_password']
+                ?? $order->customer_password;
+
+            if (!$customerEmail) {
+                throw new \Exception(
+                    'Customer email not found.'
+                );
             }
 
             /*
-             * Find existing customer by email.
-             * If not found, create a new customer account.
+             * Find existing customer
              */
-            $customer = User::where('email', $customerData['email'])
+            $customer = User::where(
+                'email',
+                $customerEmail
+            )
                 ->where('role', 'customer')
                 ->first();
 
+            /*
+             * Create customer if not exists
+             */
             if (!$customer) {
 
                 $customer = User::create([
-                    'name' => $customerData['name'],
-                    'email' => $customerData['email'],
-                    'mobile' => $customerData['mobile'],
-                    'password' => Hash::make($customerData['password']),
+                    'name' => $customerName,
+                    'email' => $customerEmail,
+                    'mobile' => $customerMobile,
+                    'password' => $customerPassword,
                     'role' => 'customer',
                     'status' => true,
                 ]);
@@ -190,24 +258,30 @@ class ThemePaymentController extends Controller
             } else {
 
                 /*
-                 * Existing customer:
-                 * update name/mobile only.
-                 * Existing password remains unchanged.
+                 * Existing customer
                  */
                 $customer->update([
-                    'name' => $customerData['name'],
-                    'mobile' => $customerData['mobile'],
+                    'name' => $customerName,
+                    'mobile' => $customerMobile,
                 ]);
             }
 
             /*
-             * Link payment with customer
+             * SAVE PAYMENT
+             *
+             * This is the important part.
              */
             $order->update([
                 'user_id' => $customer->id,
-                'razorpay_payment_id' => $request->razorpay_payment_id,
-                'razorpay_signature' => $request->razorpay_signature,
+
+                'razorpay_payment_id' =>
+                    $request->razorpay_payment_id,
+
+                'razorpay_signature' =>
+                    $request->razorpay_signature,
+
                 'status' => 'paid',
+
                 'paid_at' => now(),
             ]);
 
@@ -216,16 +290,24 @@ class ThemePaymentController extends Controller
              */
             $website = $order->website;
 
-            $website->theme_id = $order->theme_id;
-            $website->save();
+            if ($website) {
+                $website->theme_id = $order->theme_id;
+                $website->save();
+            }
 
             /*
-             * Remove customer details from session
+             * Remove temporary session
              */
             session()->forget('theme_customer');
 
+            /*
+             * Success
+             */
             return redirect()
-                ->route('frontend.themes', $website->slug)
+                ->route(
+                    'frontend.themes',
+                    $website->slug
+                )
                 ->with(
                     'success',
                     'Payment successful! Theme activated successfully.'
@@ -233,9 +315,28 @@ class ThemePaymentController extends Controller
 
         } catch (\Exception $e) {
 
+            /*
+             * Payment verification failed
+             */
             $order->update([
                 'status' => 'failed',
             ]);
+
+            /*
+             * IMPORTANT:
+             * During development, log the real error.
+             */
+            \Log::error(
+                'Theme payment verification failed',
+                [
+                    'order_id' => $order->id,
+                    'razorpay_order_id' =>
+                        $request->razorpay_order_id,
+                    'razorpay_payment_id' =>
+                        $request->razorpay_payment_id,
+                    'error' => $e->getMessage(),
+                ]
+            );
 
             return redirect()
                 ->route(
@@ -267,138 +368,173 @@ class ThemePaymentController extends Controller
             );
     }
 
-
+    /**
+     * Razorpay Webhook
+     */
     public function webhook(Request $request)
-{
-    $webhookSecret = config('services.razorpay.webhook_secret');
+    {
+        $webhookSecret =
+            config('services.razorpay.webhook_secret');
 
-    $signature = $request->header('X-Razorpay-Signature');
+        $signature =
+            $request->header('X-Razorpay-Signature');
 
-    if (!$signature || !$webhookSecret) {
-        return response()->json([
-            'message' => 'Invalid webhook configuration.'
-        ], 400);
-    }
+        if (!$signature || !$webhookSecret) {
+            return response()->json([
+                'message' =>
+                    'Invalid webhook configuration.'
+            ], 400);
+        }
 
-    $rawBody = $request->getContent();
+        $rawBody = $request->getContent();
 
-    $expectedSignature = hash_hmac(
-        'sha256',
-        $rawBody,
-        $webhookSecret
-    );
+        $expectedSignature = hash_hmac(
+            'sha256',
+            $rawBody,
+            $webhookSecret
+        );
 
-    if (!hash_equals($expectedSignature, $signature)) {
-        return response()->json([
-            'message' => 'Invalid webhook signature.'
-        ], 400);
-    }
+        if (!hash_equals(
+            $expectedSignature,
+            $signature
+        )) {
+            return response()->json([
+                'message' =>
+                    'Invalid webhook signature.'
+            ], 400);
+        }
 
-    $payload = json_decode($rawBody, true);
+        $payload = json_decode(
+            $rawBody,
+            true
+        );
 
-    if (!is_array($payload)) {
-        return response()->json([
-            'message' => 'Invalid payload.'
-        ], 400);
-    }
+        if (!is_array($payload)) {
+            return response()->json([
+                'message' =>
+                    'Invalid payload.'
+            ], 400);
+        }
 
-    $event = $payload['event'] ?? null;
+        $event = $payload['event'] ?? null;
 
-    if ($event !== 'order.paid') {
-        return response()->json([
-            'message' => 'Event ignored.'
-        ], 200);
-    }
+        if ($event !== 'order.paid') {
+            return response()->json([
+                'message' =>
+                    'Event ignored.'
+            ], 200);
+        }
 
-    $razorpayOrderId =
-        $payload['payload']['order']['entity']['id'] ?? null;
+        $razorpayOrderId =
+            $payload['payload']['order']['entity']['id']
+            ?? null;
 
-    $razorpayPaymentId =
-        $payload['payload']['payment']['entity']['id'] ?? null;
+        $razorpayPaymentId =
+            $payload['payload']['payment']['entity']['id']
+            ?? null;
 
-    if (!$razorpayOrderId || !$razorpayPaymentId) {
-        return response()->json([
-            'message' => 'Missing payment information.'
-        ], 400);
-    }
+        if (!$razorpayOrderId || !$razorpayPaymentId) {
+            return response()->json([
+                'message' =>
+                    'Missing payment information.'
+            ], 400);
+        }
 
-    $order = ThemeOrder::where(
-        'razorpay_order_id',
-        $razorpayOrderId
-    )->first();
+        $order = ThemeOrder::where(
+            'razorpay_order_id',
+            $razorpayOrderId
+        )->first();
 
-    if (!$order) {
-        return response()->json([
-            'message' => 'Order not found.'
-        ], 404);
-    }
+        if (!$order) {
+            return response()->json([
+                'message' =>
+                    'Order not found.'
+            ], 404);
+        }
 
-    // Duplicate webhook/payment protection
-    if ($order->status === 'paid') {
-        return response()->json([
-            'message' => 'Order already processed.'
-        ], 200);
-    }
+        /*
+         * Already processed
+         */
+        if ($order->status === 'paid') {
+            return response()->json([
+                'message' =>
+                    'Order already processed.'
+            ], 200);
+        }
 
-    $razorpayAmount =
-        $payload['payload']['order']['entity']['amount'] ?? null;
+        /*
+         * Verify amount
+         */
+        $razorpayAmount =
+            $payload['payload']['order']['entity']['amount']
+            ?? null;
 
-    $expectedAmount = (int) round(
-        ((float) $order->amount) * 100
-    );
+        $expectedAmount = (int) round(
+            ((float) $order->amount) * 100
+        );
 
-    if ((int) $razorpayAmount !== $expectedAmount) {
-        return response()->json([
-            'message' => 'Amount mismatch.'
-        ], 400);
-    }
+        if ((int) $razorpayAmount !== $expectedAmount) {
+            return response()->json([
+                'message' =>
+                    'Amount mismatch.'
+            ], 400);
+        }
 
-    $order->update([
-        'razorpay_payment_id' => $razorpayPaymentId,
-        'status' => 'paid',
-        'paid_at' => now(),
-    ]);
+        /*
+         * Find/create customer from DB.
+         *
+         * We now save customer data into ThemeOrder
+         * when the Razorpay order is created.
+         */
+        $customer = User::where(
+            'email',
+            $order->customer_email
+        )
+            ->where('role', 'customer')
+            ->first();
 
-    $customer = User::where(
-        'email',
-        $order->customer_email
-    )
-    ->where('role', 'customer')
-    ->first();
+        if (!$customer) {
 
-    if (!$customer) {
+            $customer = User::create([
+                'name' => $order->customer_name,
+                'email' => $order->customer_email,
+                'mobile' => $order->customer_mobile,
+                'password' => $order->customer_password,
+                'role' => 'customer',
+                'status' => true,
+            ]);
 
-        $customer = User::create([
-            'name' => $order->customer_name,
-            'email' => $order->customer_email,
-            'mobile' => $order->customer_mobile,
-            'password' => $order->customer_password,
-            'role' => 'customer',
-            'status' => true,
+        } else {
+
+            $customer->update([
+                'name' => $order->customer_name,
+                'mobile' => $order->customer_mobile,
+            ]);
+        }
+
+        /*
+         * SAVE PAYMENT
+         */
+        $order->update([
+            'user_id' => $customer->id,
+            'razorpay_payment_id' => $razorpayPaymentId,
+            'status' => 'paid',
+            'paid_at' => now(),
         ]);
 
-    } else {
+        /*
+         * Activate theme
+         */
+        $website = $order->website;
 
-        $customer->update([
-            'name' => $order->customer_name,
-            'mobile' => $order->customer_mobile,
-        ]);
+        if ($website) {
+            $website->theme_id = $order->theme_id;
+            $website->save();
+        }
+
+        return response()->json([
+            'message' =>
+                'Webhook processed successfully.'
+        ], 200);
     }
-
-    $order->update([
-        'user_id' => $customer->id,
-    ]);
-
-    $website = $order->website;
-
-    if ($website) {
-        $website->theme_id = $order->theme_id;
-        $website->save();
-    }
-
-    return response()->json([
-        'message' => 'Webhook processed successfully.'
-    ], 200);
-}
-
 }

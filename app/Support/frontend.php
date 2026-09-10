@@ -116,18 +116,52 @@ if (! function_exists('frontend_category_url')) {
         );
     }
 }
-
-
 if (! function_exists('frontend_news_url')) {
 
-    function frontend_news_url(string $newsSlug): string
-    {
-        return frontend_domain_url(
-            '/news/' . $newsSlug
-        );
+    function frontend_news_url(
+        string $newsSlug,
+        $website = null
+    ): string {
+
+        /*
+        |----------------------------------------------------------------------
+        | Custom domain
+        |----------------------------------------------------------------------
+        */
+
+        if (app()->bound('currentWebsite')) {
+
+            $currentWebsite = app('currentWebsite');
+
+            return frontend_domain_url(
+                '/news/' . $newsSlug
+            );
+        }
+
+
+        /*
+        |----------------------------------------------------------------------
+        | Normal /site/{slug} URL
+        |----------------------------------------------------------------------
+        */
+
+        if ($website) {
+
+            return url(
+                '/site/' . $website->slug . '/news/' . $newsSlug
+            );
+        }
+
+
+        /*
+        |----------------------------------------------------------------------
+        | Fallback
+        |----------------------------------------------------------------------
+        */
+
+        return url('/news/' . $newsSlug);
     }
 }
-
 
 if (! function_exists('frontend_search_url')) {
 

@@ -733,6 +733,36 @@
             @endif
 
 
+                {{-- ========================================================
+     NEWS VIDEO
+========================================================= --}}
+
+@if(!empty($news->video))
+
+    <div class="mt-8 overflow-hidden rounded-[28px] bg-black border border-[#eeeeea]">
+
+        <video
+            controls
+            preload="metadata"
+            class="w-full"
+            style="max-height: 650px;"
+        >
+
+            <source
+                src="{{ asset('storage/' . $news->video) }}"
+                type="video/mp4"
+            >
+
+            Your browser does not support the video tag.
+
+        </video>
+
+    </div>
+
+@endif
+
+
+
             {{-- ARTICLE BODY --}}
 
             <div class="soft-card

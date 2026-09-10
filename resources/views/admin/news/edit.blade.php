@@ -214,6 +214,37 @@
             </div>
 
 
+            <div class="form-group mb-3">
+    <label for="video">News Video</label>
+
+    @if($news->video)
+        <div class="mb-3">
+            <video
+                controls
+                style="max-width: 100%; width: 500px; height: 280px; background: #000;"
+            >
+                <source src="{{ asset('storage/' . $news->video) }}">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    @endif
+
+    <input
+        type="file"
+        name="video"
+        id="video"
+        class="form-control"
+        accept="video/mp4,video/webm,video/ogg,video/quicktime"
+    >
+
+    <small class="text-muted">
+
+        Maximum size: 50MB.
+        
+    </small>
+</div>
+
+
             {{-- Title --}}
             <div class="form-group mb-3">
 

@@ -1,4 +1,4 @@
- @extends('adminlte::page')
+@extends('adminlte::page')
 
 @section('title', 'Super Admin Dashboard')
 
@@ -11,7 +11,7 @@
 <div class="row">
 
     {{-- Total Users --}}
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <div class="small-box bg-info">
             <div class="inner">
                 <h3>{{ $totalUsers }}</h3>
@@ -30,7 +30,7 @@
     </div>
 
     {{-- Super Admins --}}
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <div class="small-box bg-danger">
             <div class="inner">
                 <h3>{{ $totalSuperAdmins }}</h3>
@@ -49,7 +49,7 @@
     </div>
 
     {{-- Admins --}}
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <div class="small-box bg-warning">
             <div class="inner">
                 <h3>{{ $totalAdmins }}</h3>
@@ -62,25 +62,6 @@
 
             <a href="{{ route('users.index') }}" class="small-box-footer">
                 View Admins
-                <i class="fas fa-arrow-circle-right"></i>
-            </a>
-        </div>
-    </div>
-
-    {{-- Editors --}}
-    <div class="col-lg-3 col-md-6">
-        <div class="small-box bg-success">
-            <div class="inner">
-                <h3>{{ $totalEditors }}</h3>
-                <p>Editors</p>
-            </div>
-
-            <div class="icon">
-                <i class="fas fa-edit"></i>
-            </div>
-
-            <a href="{{ route('users.index') }}" class="small-box-footer">
-                View Editors
                 <i class="fas fa-arrow-circle-right"></i>
             </a>
         </div>
@@ -153,7 +134,8 @@
 
 {{-- Welcome Card --}}
 <div class="card mt-3">
- <div class="card-header">
+
+    <div class="card-header">
         <h3 class="card-title">
             Welcome, {{ auth()->user()->name }}
         </h3>

@@ -7,45 +7,53 @@ use Illuminate\Support\Facades\DB;
 
 class PermissionService
 {
-    /**
-     * Check whether a user has a specific permission.
-     *
-     * Priority:
-     * 1. Admin role = Full Access
-     * 2. Per-user override
-     * 3. Role permission
-     */
     public function hasPermission(User $user, string $permission): bool
     {
-        // Inactive user = no permission
+        /*
+        |--------------------------------------------------------------------------
+        | Inactive User
+        |--------------------------------------------------------------------------
+        */
+
         if (!$user->status) {
             return false;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 1. ADMIN = FULL ACCESS
-        |--------------------------------------------------------------------------
-        |
-        | Admin does not need individual permissions.
-        | Admin can access everything in the CMS.
-        |
-        */
-        if (in_array($user->role , ['super_admin','admin'])) {
-            return true;
-        }
 
         /*
         |--------------------------------------------------------------------------
-        | 2. CHECK PER-USER OVERRIDE
+        | SUPER ADMIN
         |--------------------------------------------------------------------------
         |
-        | Per-user permission has higher priority than role permission.
-        |
-        | allow = permission granted
-        | deny  = permission denied
+        | Super Admin has full platform access.
         |
         */
+
+        if ($user->role === 'super_admin') {
+            return true;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN
+        |--------------------------------------------------------------------------
+        |
+        | Admin does NOT automatically get full access.
+        | Permissions must be assigned through role_permissions
+        | or user_permissions.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | USER-SPECIFIC PERMISSION
+        |--------------------------------------------------------------------------
+        |
+        | User-specific permission has priority.
+        |
+        */
+
         $userOverride = DB::table('user_permissions')
             ->join(
                 'permissions',
@@ -58,19 +66,18 @@ class PermissionService
             ->select('user_permissions.effect')
             ->first();
 
+
         if ($userOverride) {
             return $userOverride->effect === 'allow';
         }
 
+
         /*
         |--------------------------------------------------------------------------
-        | 3. CHECK ROLE PERMISSION
+        | ROLE PERMISSION
         |--------------------------------------------------------------------------
-        |
-        | If there is no per-user override, fall back to the
-        | permissions assigned to the user's role.
-        |
         */
+
         return DB::table('role_permissions')
             ->join(
                 'permissions',

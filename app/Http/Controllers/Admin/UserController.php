@@ -1,32 +1,72 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\Permission;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Website;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     /**
      * Display users.
+     *
+     * Super Admin:
+     * - Can see all users.
+     *
+     * Admin:
+     * - Can only see users assigned to their own website.
      */
     public function index()
     {
-        $users = User::latest()->paginate(10);
+        $currentUser = auth()->user();
+
+        if ($currentUser->role === 'super_admin') {
+            $users = User::with('website')
+                ->latest()
+                ->paginate(10);
+        } elseif ($currentUser->role === 'admin') {
+            if (!$currentUser->website_id) {
+                $users = User::whereRaw('1 = 0')
+                    ->paginate(10);
+            } else {
+                $users = User::with('website')
+                    ->where('website_id', $currentUser->website_id)
+                    ->latest()
+                    ->paginate(10);
+            }
+        } else {
+            abort(403, 'Unauthorized access.');
+        }
 
         return view('admin.users.index', compact('users'));
     }
 
     /**
      * Show create user form.
+     *
+     * Only Super Admin can create users because only Super Admin
+     * is allowed to decide who becomes Admin or Super Admin.
      */
     public function create()
     {
-        return view('admin.users.create');
+        $currentUser = auth()->user();
+
+        if ($currentUser->role !== 'super_admin') {
+            abort(403, 'Only Super Admin can create users.');
+        }
+
+        $websites = Website::orderBy('name')->get();
+
+        return view(
+            'admin.users.create',
+            compact('websites')
+        );
     }
 
     /**
@@ -34,58 +74,114 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-            'role' => 'required|in:super_admin,admin,editor',
-            'status' => 'required|boolean',
-        ]);
-
         $currentUser = auth()->user();
 
         /*
         |--------------------------------------------------------------------------
-        | ROLE CREATION CONTROL
+        | Only Super Admin can create users
         |--------------------------------------------------------------------------
         */
 
-        if ($currentUser->role === 'super_admin') {
+        if ($currentUser->role !== 'super_admin') {
+            abort(403, 'Only Super Admin can create users.');
+        }
 
-            // Super Admin can create any role.
-            $allowedRoles = [
-                'super_admin',
-                'admin',
-                'editor',
-            ];
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
 
-            if (!in_array($request->role, $allowedRoles)) {
-                abort(403, 'Unauthorized role assignment.');
-            }
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-        } elseif ($currentUser->role === 'admin') {
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
 
-            // Admin can create Editor only.
-            if ($request->role !== 'editor') {
-                abort(403, 'Admin can only create Editor users.');
+            'password' => [
+                'required',
+                'string',
+                'min:6',
+                'confirmed',
+            ],
+
+            'role' => [
+                'required',
+                Rule::in([
+                    'super_admin',
+                    'admin',
+                ]),
+            ],
+
+            'status' => [
+                'required',
+                'boolean',
+            ],
+
+            'website_id' => [
+                'nullable',
+                'integer',
+                'exists:websites,id',
+            ],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Website assignment rules
+        |--------------------------------------------------------------------------
+        |
+        | Super Admin:
+        | - Super Admin does not belong to a particular website.
+        | - Admin MUST belong to one website.
+        |--------------------------------------------------------------------------
+        */
+
+        if ($validated['role'] === 'admin') {
+
+            if (empty($validated['website_id'])) {
+                return back()
+                    ->withErrors([
+                        'website_id' =>
+                            'Please select a website for the Admin.',
+                    ])
+                    ->withInput();
             }
 
         } else {
 
-            abort(403, 'Unauthorized access.');
+            // Super Admin is platform-wide.
+            $validated['website_id'] = null;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Create user
+        |--------------------------------------------------------------------------
+        */
+
         User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'status' => $request->status,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'status' => (bool) $validated['status'],
+            'website_id' => $validated['website_id'],
         ]);
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User created successfully.');
+            ->with(
+                'success',
+                'User created successfully.'
+            );
     }
 
     /**
@@ -95,7 +191,12 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        return view('admin.users.show', compact('user'));
+        $this->authorizeUserAccess($user);
+
+        return view(
+            'admin.users.show',
+            compact('user')
+        );
     }
 
     /**
@@ -105,55 +206,51 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $currentUser = auth()->user();
+        $this->authorizeUserAccess($user);
 
         /*
         |--------------------------------------------------------------------------
-        | EDIT ACCESS CONTROL
+        | Only Super Admin can edit user role / website assignment.
         |--------------------------------------------------------------------------
         */
 
-        // Admin cannot edit Super Admin.
-        if (
-            $currentUser->role === 'admin' &&
-            $user->role === 'super_admin'
-        ) {
-            abort(403, 'Admin cannot edit Super Admin.');
+        $currentUser = auth()->user();
+
+        if ($currentUser->role !== 'super_admin') {
+            abort(
+                403,
+                'Only Super Admin can edit user accounts.'
+            );
         }
 
-        // Only Super Admin and Admin can reach this area.
-        if (!in_array($currentUser->role, ['super_admin', 'admin'])) {
-            abort(403, 'Unauthorized access.');
-        }
+        $websites = Website::orderBy('name')->get();
 
-        return view('admin.users.edit', compact('user'));
+        return view(
+            'admin.users.edit',
+            compact(
+                'user',
+                'websites'
+            )
+        );
     }
 
     /**
      * User-specific permissions page.
+     *
+     * Only Super Admin can manage user permissions.
      */
     public function permissions(string $id)
     {
-        $user = User::findOrFail($id);
-
         $currentUser = auth()->user();
 
-        /*
-        |--------------------------------------------------------------------------
-        | PERMISSION MANAGEMENT CONTROL
-        |--------------------------------------------------------------------------
-        */
+        if ($currentUser->role !== 'super_admin') {
+            abort(
+                403,
+                'Only Super Admin can manage user permissions.'
+            );
+        }
 
-        // Admin cannot manage Super Admin permissions.
-        if (
-            $currentUser->role === 'admin' &&
-            $user->role === 'super_admin'
-        ) {
-            abort(403, 'Admin cannot manage Super Admin permissions.');
-        }
-           if (!in_array($currentUser->role, ['super_admin', 'admin'])) {
-            abort(403, 'Unauthorized access.');
-        }
+        $user = User::findOrFail($id);
 
         $permissions = Permission::orderBy('module')
             ->orderBy('name')
@@ -161,7 +258,10 @@ class UserController extends Controller
 
         $userPermissions = DB::table('user_permissions')
             ->where('user_id', $user->id)
-            ->pluck('effect', 'permission_id');
+            ->pluck(
+                'effect',
+                'permission_id'
+            );
 
         return view(
             'admin.users.permissions',
@@ -176,38 +276,58 @@ class UserController extends Controller
     /**
      * Update user-specific permissions.
      */
-    public function updatePermissions(Request $request, string $id)
-    {
+    public function updatePermissions(
+        Request $request,
+        string $id
+    ) {
+        $currentUser = auth()->user();
+
+        if ($currentUser->role !== 'super_admin') {
+            abort(
+                403,
+                'Only Super Admin can modify user permissions.'
+            );
+        }
+
         $user = User::findOrFail($id);
 
-        $currentUser = auth()->user();
+        $permissions = $request->input(
+            'permissions',
+            []
+        );
 
         /*
         |--------------------------------------------------------------------------
-        | PROTECT SUPER ADMIN
+        | Remove existing user-specific overrides
         |--------------------------------------------------------------------------
         */
-
-        if (
-            $currentUser->role === 'admin' &&
-            $user->role === 'super_admin'
-        ) {
-            abort(403, 'Admin cannot modify Super Admin permissions.');
-        }
-
-        if (!in_array($currentUser->role, ['super_admin', 'admin'])) {
-            abort(403, 'Unauthorized access.');
-        }
-
-        $permissions = $request->input('permissions', []);
 
         DB::table('user_permissions')
             ->where('user_id', $user->id)
             ->delete();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Save new overrides
+        |--------------------------------------------------------------------------
+        */
+
         foreach ($permissions as $permissionId => $effect) {
 
-            if (!in_array($effect, ['allow', 'deny'])) {
+            if (!in_array(
+                $effect,
+                ['allow', 'deny'],
+                true
+            )) {
+                continue;
+            }
+
+            $permissionExists = Permission::where(
+                'id',
+                $permissionId
+            )->exists();
+
+            if (!$permissionExists) {
                 continue;
             }
 
@@ -221,7 +341,10 @@ class UserController extends Controller
         }
 
         return redirect()
-            ->route('users.permissions', $user->id)
+            ->route(
+                'users.permissions',
+                $user->id
+            )
             ->with(
                 'success',
                 'User permissions updated successfully.'
@@ -230,116 +353,175 @@ class UserController extends Controller
 
     /**
      * Update user.
+     *
+     * Only Super Admin can update users.
      */
-    public function update(Request $request, string $id)
-    {
-        $user = User::findOrFail($id);
-
+    public function update(
+        Request $request,
+        string $id
+    ) {
         $currentUser = auth()->user();
 
-        $request->validate([
-            'name' => 'required|max:255',
+        if ($currentUser->role !== 'super_admin') {
+            abort(
+                403,
+                'Only Super Admin can update user accounts.'
+            );
+        }
+
+        $user = User::findOrFail($id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
             'email' => [
                 'required',
                 'email',
+                'max:255',
                 Rule::unique('users', 'email')
                     ->ignore($user->id),
             ],
 
-            'role' => 'required|in:super_admin,admin,editor',
+            'role' => [
+                'required',
+                Rule::in([
+                    'super_admin',
+                    'admin',
+                ]),
+            ],
 
-            'status' => 'required|boolean',
+            'status' => [
+                'required',
+                'boolean',
+            ],
+
+            'website_id' => [
+                'nullable',
+                'integer',
+                'exists:websites,id',
+            ],
+
+            'password' => [
+                'nullable',
+                'string',
+                'min:6',
+                'confirmed',
+            ],
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | ADMIN PROTECTION
+        | Self protection
+        |--------------------------------------------------------------------------
+        |
+        | Super Admin cannot:
+        | - deactivate their own account
+        | - change their own role
         |--------------------------------------------------------------------------
         */
 
-        // Admin cannot edit Super Admin.
-        if (
-            $currentUser->role === 'admin' &&
-            $user->role === 'super_admin'
-        ) {
-            abort(403, 'Admin cannot edit Super Admin.');
-        }
+        if ($user->id === $currentUser->id) {
 
-        /*
-        |--------------------------------------------------------------------------
-        | ROLE CONTROL
-        |--------------------------------------------------------------------------
-        */
-
-        if ($currentUser->role === 'super_admin') {
-
-            // Super Admin can assign any valid role.
-
-        } elseif ($currentUser->role === 'admin') {
-
-            // Admin can only assign Editor role.
-
-            if ($request->role !== 'editor') {
-                abort(
-                    403,
-                    'Admin can only assign Editor role.'
-                );
-            }
-
-        } else {
-
-            abort(403, 'Unauthorized access.');
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | SELF PROTECTION
-        |--------------------------------------------------------------------------
-        */
-           if ($user->id === $currentUser->id) {
-
-            // User cannot deactivate own account.
-            if ((int) $request->status === 0) {
+            if ((int) $validated['status'] === 0) {
                 abort(
                     403,
                     'You cannot deactivate your own account.'
                 );
             }
 
-            // Super Admin cannot change own role.
             if (
-                $currentUser->role === 'super_admin' &&
-                $request->role !== 'super_admin'
+                $validated['role'] !==
+                'super_admin'
             ) {
                 abort(
                     403,
-                    'Super Admin cannot change their own role.'
+                    'You cannot change your own role.'
                 );
             }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Protect the last active Super Admin
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $user->role === 'super_admin' &&
+            $validated['role'] !== 'super_admin'
+        ) {
+
+            $activeSuperAdmins = User::where(
+                'role',
+                'super_admin'
+            )
+                ->where('status', true)
+                ->count();
+
+            if ($activeSuperAdmins <= 1) {
+                abort(
+                    403,
+                    'The last active Super Admin cannot be removed.'
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Website rules
+        |--------------------------------------------------------------------------
+        */
+
+        if ($validated['role'] === 'admin') {
+
+            if (empty($validated['website_id'])) {
+                return back()
+                    ->withErrors([
+                        'website_id' =>
+                            'Please select a website for the Admin.',
+                    ])
+                    ->withInput();
+            }
+
+        } else {
+
+            // Super Admin is not assigned to a website.
+            $validated['website_id'] = null;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update data
+        |--------------------------------------------------------------------------
+        */
+
         $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
-            'status' => $request->status,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'role' => $validated['role'],
+            'status' => (bool) $validated['status'],
+            'website_id' => $validated['website_id'],
         ];
 
         /*
         |--------------------------------------------------------------------------
-        | PASSWORD
+        | Password
         |--------------------------------------------------------------------------
         */
 
-        if ($request->filled('password')) {
-
-            $request->validate([
-                'password' => 'min:6',
-            ]);
-
+        if (!empty($validated['password'])) {
             $data['password'] = Hash::make(
-                $request->password
+                $validated['password']
             );
         }
 
@@ -355,34 +537,109 @@ class UserController extends Controller
 
     /**
      * Delete user.
+     *
+     * Only Super Admin can delete users.
      */
-   public function destroy(string $id)
-{
-    $user = User::findOrFail($id);
-    $currentUser = auth()->user();
+    public function destroy(string $id)
+    {
+        $currentUser = auth()->user();
 
-    // User cannot delete their own account
-    if ($user->id === $currentUser->id) {
+        if ($currentUser->role !== 'super_admin') {
+            abort(
+                403,
+                'Only Super Admin can delete users.'
+            );
+        }
+
+        $user = User::findOrFail($id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cannot delete own account
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->id === $currentUser->id) {
+            return redirect()
+                ->route('users.index')
+                ->with(
+                    'error',
+                    'You cannot delete your own account.'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cannot delete Super Admin
+        |--------------------------------------------------------------------------
+        |
+        | For safety, Super Admin accounts cannot be deleted from here.
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->role === 'super_admin') {
+            abort(
+                403,
+                'Super Admin accounts cannot be deleted.'
+            );
+        }
+
+        $user->delete();
+
         return redirect()
             ->route('users.index')
-            ->with('error', 'You cannot delete your own account.');
+            ->with(
+                'success',
+                'User deleted successfully.'
+            );
     }
 
-    // Only Super Admin can delete users
-    if ($currentUser->role !== 'super_admin') {
-        abort(403, 'Only Super Admin can delete users.');
+    /**
+     * Check whether current user can access target user.
+     */
+    private function authorizeUserAccess(
+        User $user
+    ): void {
+        $currentUser = auth()->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Super Admin
+        |--------------------------------------------------------------------------
+        */
+
+        if ($currentUser->role === 'super_admin') {
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin
+        |--------------------------------------------------------------------------
+        |
+        | Admin can only access users belonging to the same website.
+        |--------------------------------------------------------------------------
+        */
+
+        if ($currentUser->role === 'admin') {
+
+            if (
+                !$currentUser->website_id ||
+                $user->website_id !==
+                $currentUser->website_id
+            ) {
+                abort(
+                    403,
+                    'You do not have access to this user.'
+                );
+            }
+
+            return;
+        }
+
+        abort(
+            403,
+            'Unauthorized access.'
+        );
     }
-
-    // Super Admin cannot delete another Super Admin
-    if ($user->role === 'super_admin') {
-        abort(403, 'Super Admin cannot delete another Super Admin.');
-    }
-
-    $user->delete();
-
-    return redirect()
-        ->route('users.index')
-        ->with('success', 'User deleted successfully.');
-}
-
 }

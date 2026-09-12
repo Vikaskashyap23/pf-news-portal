@@ -25,6 +25,11 @@ class Website extends Model
         return $this->hasMany(Category::class);
     }
 
+    public function users(): HasMany
+{
+    return $this->hasMany(User::class);
+}
+
     public function news()
     {
         return $this->hasMany(News::class);

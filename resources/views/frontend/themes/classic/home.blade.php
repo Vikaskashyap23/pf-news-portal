@@ -296,17 +296,6 @@
                 @endforeach
 
 
-                <a href="{{ route('frontend.themes', [
-                    'websiteSlug' => $website->slug
-                ]) }}"
-                   class="nav-link
-                          text-[12px]
-                          font-semibold">
-
-                    Themes
-
-                </a>
-
 
             </nav>
 

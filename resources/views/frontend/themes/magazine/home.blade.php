@@ -335,21 +335,6 @@
                 @endforeach
 
 
-                {{-- THEMES --}}
-
-                <a href="{{ route('frontend.themes', [
-                    'websiteSlug' => $website->slug
-                ]) }}"
-                   class="nav-item
-                          px-5
-                          py-4
-                          text-[10px]
-                          uppercase
-                          font-black">
-
-                    THEMES
-
-                </a>
 
 
                 <div class="ml-auto

@@ -430,19 +430,6 @@
             @endforeach
 
 
-            <a href="{{ route('frontend.themes', [
-                'websiteSlug' => $website->slug
-            ]) }}"
-               class="px-5
-                      py-3
-                      text-[10px]
-                      uppercase
-                      tracking-wider
-                      text-gray-400">
-
-                Themes
-
-            </a>
 
 
         </div>

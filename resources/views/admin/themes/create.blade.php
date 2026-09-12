@@ -1,4 +1,4 @@
-[26-08-2026 09:24] Vikas Kashyap: @extends('adminlte::page')
+@extends('adminlte::page')
 
 @section('title', 'Add Theme')
 
@@ -12,7 +12,23 @@
 
     <div class="card-body">
 
-        <form action="{{ route('themes.store') }}" method="POST" enctype="multipart/form-data">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <strong>Please fix the following errors:</strong>
+
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form
+            action="{{ route('themes.store') }}"
+            method="POST"
+            enctype="multipart/form-data"
+        >
 
             @csrf
 
@@ -31,7 +47,9 @@
                 >
 
                 @error('name')
-                    <small class="text-danger">{{ $message }}</small>
+                    <small class="text-danger">
+                        {{ $message }}
+                    </small>
                 @enderror
 
             </div>
@@ -50,7 +68,9 @@
                 >{{ old('description') }}</textarea>
 
                 @error('description')
-                    <small class="text-danger">{{ $message }}</small>
+                    <small class="text-danger">
+                        {{ $message }}
+                    </small>
                 @enderror
 
             </div>
@@ -68,13 +88,17 @@
                     required
                 >
 
-                    <option value="free"
-                        {{ old('type', 'free') == 'free' ? 'selected' : '' }}>
+                    <option
+                        value="free"
+                        {{ old('type', 'free') == 'free' ? 'selected' : '' }}
+                    >
                         Free
                     </option>
 
-                    <option value="premium"
-                        {{ old('type') == 'premium' ? 'selected' : '' }}>
+                    <option
+                        value="premium"
+                        {{ old('type') == 'premium' ? 'selected' : '' }}
+                    >
                         Premium
                     </option>
 
@@ -84,7 +108,10 @@
 
 
             {{-- Price --}}
-            <div class="form-group mb-3" id="priceField">
+            <div
+                class="form-group mb-3"
+                id="priceField"
+            >
 
                 <label>Price (₹)</label>
 
@@ -99,14 +126,19 @@
                 >
 
                 @error('price')
-                    <small class="text-danger">{{ $message }}</small>
+                    <small class="text-danger">
+                        {{ $message }}
+                    </small>
                 @enderror
 
             </div>
 
 
             {{-- Trial Days --}}
-            <div class="form-group mb-3" id="trialField">
+            <div
+                class="form-group mb-3"
+                id="trialField"
+            >
 
                 <label>Trial Days</label>
 
@@ -120,7 +152,39 @@
                 >
 
                 @error('trial_days')
-                    <small class="text-danger">{{ $message }}</small>
+                    <small class="text-danger">
+                        {{ $message }}
+                    </small>
+                @enderror
+
+            </div>
+
+
+            {{-- Theme ZIP --}}
+            <div class="form-group mb-3">
+
+                <label>
+                    Theme ZIP File
+                    <span class="text-danger">*</span>
+                </label>
+
+                <input
+                    type="file"
+                    name="theme_zip"
+                    class="form-control"
+                    accept=".zip,application/zip"
+                    required
+                >
+
+                <small class="form-text text-muted">
+                    Upload a complete NewsHub theme ZIP file.
+                    Maximum size: 10 MB.
+                </small>
+
+                @error('theme_zip')
+                    <small class="text-danger d-block">
+                        {{ $message }}
+                    </small>
                 @enderror
 
             </div>
@@ -135,30 +199,17 @@
                     type="file"
                     name="preview_image"
                     class="form-control"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                 >
+
+                <small class="form-text text-muted">
+                    JPG, PNG or WEBP. Maximum size: 2 MB.
+                </small>
 
                 @error('preview_image')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-
-            </div>
-
-
-            {{-- Theme Path --}}
-            <div class="form-group mb-3">
-
-                <label>Theme Path</label>
-                   <input
-                    type="text"
-                    name="theme_path"
-                    class="form-control"
-                    value="{{ old('theme_path') }}"
-                    placeholder="Example: themes/magazine"
-                >
-
-                @error('theme_path')
-                    <small class="text-danger">{{ $message }}</small>
+                    <small class="text-danger d-block">
+                        {{ $message }}
+                    </small>
                 @enderror
 
             </div>
@@ -169,15 +220,23 @@
 
                 <label>Status</label>
 
-                <select name="status" class="form-control">
+                <select
+                    name="status"
+                    class="form-control"
+                    required
+                >
 
-                    <option value="1"
-                        {{ old('status', 1) == 1 ? 'selected' : '' }}>
+                    <option
+                        value="1"
+                        {{ old('status', 1) == 1 ? 'selected' : '' }}
+                    >
                         Active
                     </option>
 
-                    <option value="0"
-                        {{ old('status') == 0 ? 'selected' : '' }}>
+                    <option
+                        value="0"
+                        {{ old('status') === '0' ? 'selected' : '' }}
+                    >
                         Inactive
                     </option>
 
@@ -186,12 +245,19 @@
             </div>
 
 
-            <button type="submit" class="btn btn-success">
-                Save Theme
+            {{-- Buttons --}}
+            <button
+                type="submit"
+                class="btn btn-success"
+            >
+                <i class="fas fa-upload"></i>
+                Install Theme
             </button>
 
-            <a href="{{ route('themes.index') }}"
-               class="btn btn-secondary">
+            <a
+                href="{{ route('themes.index') }}"
+                class="btn btn-secondary"
+            >
                 Back
             </a>
 
@@ -206,10 +272,14 @@
 
     function togglePremiumFields() {
 
-        let type = document.getElementById('themeType').value;
+        const type =
+            document.getElementById('themeType').value;
 
-        let priceField = document.getElementById('priceField');
-        let trialField = document.getElementById('trialField');
+        const priceField =
+            document.getElementById('priceField');
+
+        const trialField =
+            document.getElementById('trialField');
 
         if (type === 'premium') {
 
@@ -224,7 +294,12 @@
         }
     }
 
-    document.getElementById('themeType').addEventListener('change', togglePremiumFields);
+    document
+        .getElementById('themeType')
+        .addEventListener(
+            'change',
+            togglePremiumFields
+        );
 
     togglePremiumFields();
 

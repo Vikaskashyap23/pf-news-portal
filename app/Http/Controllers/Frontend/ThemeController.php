@@ -27,9 +27,10 @@ class ThemeController extends Controller
         ));
     }
 
-    public function activate($websiteSlug, $themeId)
+public function activate($websiteSlug, $themeId)
 {
-    $website = Website::where('slug', $websiteSlug)->firstOrFail();
+    $website = Website::where('slug', $websiteSlug)
+        ->firstOrFail();
 
     $theme = Theme::where('id', $themeId)
         ->where('status', 1)
@@ -40,10 +41,14 @@ class ThemeController extends Controller
     $website->save();
 
     return redirect()
-        ->route('frontend.themes', $websiteSlug)
-        ->with('success', 'Theme activated successfully!');
+        ->route('admin.theme-store.index', [
+            'website' => $website->id,
+        ])
+        ->with(
+            'success',
+            'Theme "' . $theme->name . '" activated successfully!'
+        );
 }
-
 
 
 public function preview($websiteSlug, $themeId)

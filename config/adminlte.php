@@ -297,10 +297,8 @@ return [
     | https://github.com/jeroennoten/Laravel-AdminLTE/wiki/Menu-Configuration
     |
     */
+'menu' => [
 
-     'menu' => [
-
-    // Navbar items
     [
         'type' => 'navbar-search',
         'text' => 'search',
@@ -312,15 +310,16 @@ return [
         'topnav_right' => true,
     ],
 
-    // Sidebar
     [
         'text' => 'Dashboard',
         'url' => 'admin',
         'icon' => 'fas fa-home',
-        
     ],
 
-    ['header' => 'CMS MANAGEMENT'],
+    [
+        'header' => 'CMS MANAGEMENT',
+        'can' => 'categories.view',
+    ],
 
     [
         'text' => 'Websites',
@@ -351,27 +350,16 @@ return [
     ],
 
     [
-        'text' => 'Themes',
-        'url' => 'themes',
-        'icon' => 'fas fa-palette',
-        'can' => 'themes.view',
-    ],
-
-    [
         'text' => 'Users',
         'url' => 'users',
         'icon' => 'fas fa-users',
         'can' => 'users.view',
     ],
 
-
     [
-    'text' => 'Payments',
-    'url' => 'payments',
-    'icon' => 'fas fa-credit-card',
+        'header' => 'SETTINGS',
+        'can' => 'settings.view',
     ],
-
-    ['header' => 'SETTINGS'],
 
     [
         'text' => 'Settings',
@@ -379,8 +367,29 @@ return [
         'icon' => 'fas fa-cog',
         'can' => 'settings.view',
     ],
-],
-    /*
+
+    [
+        'text' => 'Themes',
+        'url' => 'themes',
+        'icon' => 'fas fa-palette',
+        'can' => 'themes.view',
+    ],
+
+    [
+        'text' => 'Theme Store',
+        'url' => 'admin/theme-store',
+        'icon' => 'fas fa-store',
+        'can' => 'themes.view',
+    ],
+
+    [
+        'text' => 'Payments',
+        'url' => 'payments',
+        'icon' => 'fas fa-credit-card',
+        'can' => 'payments.view',
+    ],
+
+],    /*
     |--------------------------------------------------------------------------
     | Menu Filters
     |--------------------------------------------------------------------------

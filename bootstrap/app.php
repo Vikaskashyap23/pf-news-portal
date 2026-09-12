@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
              'admin' => \App\Http\Middleware\AdminMiddleware::class,
 
              'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+
+             'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
           ]);
     $middleware->web(append: [
     \App\Http\Middleware\SetLocale::class,

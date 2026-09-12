@@ -6,6 +6,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
@@ -25,10 +26,11 @@ class User extends Authenticatable
         'role',
         'mobile',
         'status',
+        'website_id',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * The attributes that are hidden for serialization.
      *
      * @var list<string>
      */
@@ -36,6 +38,14 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /**
+     * User's assigned website.
+     */
+    public function website(): BelongsTo
+    {
+        return $this->belongsTo(Website::class);
+    }
 
     /**
      * Check whether this user has a specific permission.
